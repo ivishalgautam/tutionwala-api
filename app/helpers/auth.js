@@ -17,6 +17,8 @@ function generateAccessToken(userData) {
 }
 
 function generateRefreshToken(userData) {
+  console.log("jwt", config.jwt_refresh_secret);
+
   return jwt.sign({ user: userData }, config.jwt_refresh_secret, {
     expiresIn: constants.time.REFRESH_TOKEN_EXPIRES_IN,
   });
