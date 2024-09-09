@@ -15,8 +15,8 @@ const config = {
   pg_dialect: process.env.DB_DIALECT,
 
   // jwt secret key
-  jwt_secret: process.env.JWT_SECRET,
-  jwt_refresh_secret: process.env.JWT_REFRESH_SECRET_CODE,
+  jwt_secret: process.env.SECRET_JWT,
+  jwt_refresh_secret: process.env.REFRESH_SECRET_JWT,
   smtp_from_email: process.env.SMTP_EMAIL || "tech.bdseducation@gmail.com",
   smtp_port: parseInt(process.env.SMTP_PORT) || 465,
   smtp_host: process.env.SMTP_SERVER || "smtp.gmail.com",
