@@ -69,12 +69,16 @@ const get = async (req) => {
         enq.created_at,
         json_agg(
           json_build_object(
+            'user_id', stuusr.id,
+            'student_id', stu.id,
             'fullname', stuusr.fullname,
             'profile_picture', stuusr.profile_picture
           )
         ) as student,
         json_agg(
           json_build_object(
+            'user_id', tutusr.id,
+            'tutor_id', tut.id,
             'fullname', tutusr.fullname,
             'profile_picture', tutusr.profile_picture
           )

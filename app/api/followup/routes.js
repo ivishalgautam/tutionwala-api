@@ -7,9 +7,9 @@ export default async function routes(fastify, options) {
   fastify.delete("/:id", { schema: schema.checkParams }, controller.deleteById);
   fastify.get("/:id", { schema: schema.checkParams }, controller.getById);
   fastify.get(
-    "/getByLeadId/:id",
+    "/getByStudentId/:id",
     { schema: schema.checkParams },
-    controller.getByLeadId
+    controller.getByStudentId
   );
   fastify.get("/", {}, controller.get);
   fastify.put("/:id", { schema: schema.checkParams }, controller.updateById);

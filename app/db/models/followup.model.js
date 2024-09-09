@@ -86,7 +86,7 @@ const create = async (req) => {
     content: req.body.content,
     date: req.body.date,
     student_id: req.body.student_id,
-    tutor_id: req.user_data.id,
+    tutor_id: req.body.tutor_id,
   });
 };
 
@@ -109,15 +109,18 @@ const update = async (req, id) => {
 };
 
 const get = async (req) => {
+  const { role, id } = req.user_data;
   let whereQuery = "";
-  if (req.user_data.role === "customer") {
-    whereQuery = `fu.lead_id = '${req.user_data.id}'`;
+  if (role === "tutor") {
+    whereQuery = `usr.id = '${id}'`;
   }
 
   let query = `
     SELECT
-      *
-      FROM followups fu
+      fu.*
+      FROM ${constants.models.FOLLOW_UP_TABLE} fu
+      LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = fu.tutor_id
+      LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = tut.user_id
       ${whereQuery}
     `;
 
@@ -138,25 +141,6 @@ const getByStudentId = async (req, id) => {
   return await FollowUpModel.findAll({
     where: { student_id: req.params.id || id },
     order: [["created_at", "DESC"]],
-    attributes: {
-      exclude: ["tutor_id", "student_id", "updated_at"],
-    },
-    raw: true,
-  });
-};
-
-const getByUserId = async (req, lead_id) => {
-  let query = `
-      SELECT
-        *
-        FROM followups fu
-        fu.sales_person_id = '${req.user_data.id}' AND fu.lead_id = '${
-    req.params.id || lead_id
-  }'
-      `;
-
-  return await FollowUpModel.sequelize.query(query, {
-    type: QueryTypes.SELECT,
     raw: true,
   });
 };
@@ -172,7 +156,6 @@ export default {
   create: create,
   update: update,
   getById: getById,
-  getByUserId: getByUserId,
   deleteById: deleteById,
   getByStudentId: getByStudentId,
   get: get,

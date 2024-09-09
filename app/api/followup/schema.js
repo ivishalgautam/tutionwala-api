@@ -6,9 +6,9 @@ export const schema = {
         title: { type: "string", minLength: 3 },
         content: { type: "string", minLength: 3 },
         date: { type: "string", minLength: 3 },
-        lead_id: { type: "string", format: "uuid" },
+        student_id: { type: "string", format: "uuid" },
       },
-      required: ["title", "content", "date", "lead_id"],
+      required: ["title", "content", "date", "student_id"],
     },
   },
   checkParams: {

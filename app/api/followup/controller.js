@@ -12,6 +12,10 @@ const create = async (req, res) => {
   if (!student)
     return ErrorHandler({ code: 404, message: "student not exist!" });
 
+  const tutor = await table.TutorModel.getByUserId(req);
+
+  req.body.tutor_id = tutor.id;
+
   await table.FollowupModel.create(req);
   res.send({ status: true, message: "Follow up created." });
 };
@@ -26,24 +30,17 @@ const getById = async (req, res) => {
   res.send({ status: true, data: record });
 };
 
-const getByLeadId = async (req, res) => {
-  const record = await table.LeadModel.getById(req);
+const getByStudentId = async (req, res) => {
+  const record = await table.StudentModel.getById(req);
 
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Lead not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Student not found!" });
   }
 
-  res.send({ status: true, data: await table.FollowupModel.getByLeadId(req) });
-};
-
-const getByUserId = async (req, res) => {
-  const record = await table.FollowupModel.getByUserId(req, req.params.id);
-
-  if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Follow up not found!" });
-  }
-
-  res.send({ status: true, data: record });
+  res.send({
+    status: true,
+    data: await table.FollowupModel.getByStudentId(req),
+  });
 };
 
 const updateById = async (req, res) => {
@@ -76,6 +73,5 @@ export default {
   deleteById: deleteById,
   getById: getById,
   updateById: updateById,
-  getByUserId: getByUserId,
-  getByLeadId: getByLeadId,
+  getByStudentId: getByStudentId,
 };
