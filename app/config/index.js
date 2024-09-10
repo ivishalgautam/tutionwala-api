@@ -7,6 +7,7 @@ process.env.PORT = process.env.PORT || 3001;
 
 const config = {
   port: parseInt(process.env.PORT, 10),
+
   // postgres creds
   pg_database_name: process.env.PG_DATABASE_NAME,
   pg_username: process.env.PG_USERNAME,
@@ -20,7 +21,7 @@ const config = {
   smtp_from_email: process.env.SMTP_EMAIL || "tech.bdseducation@gmail.com",
   smtp_port: parseInt(process.env.SMTP_PORT) || 465,
   smtp_host: process.env.SMTP_SERVER || "smtp.gmail.com",
-  smtp_password: process.env.SMTP_PASSWORD || "fzblfszihsuwmphl",
+  smtp_password: process.env.SMTP_PASSWORD,
 
   // zoom creds
   zoom_client_id: process.env.ZOOM_CLIENT_ID,

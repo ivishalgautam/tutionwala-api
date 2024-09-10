@@ -69,6 +69,7 @@ const otpSend = async (req, res) => {
 };
 
 const otpVerify = async (req, res) => {
+  console.log(req.body);
   const record = await table.OtpModel.getByMobile(req);
 
   if (!record) {

@@ -9,15 +9,22 @@ const expiresIn = constants.time.TOKEN_EXPIRES_IN;
 
 function generateAccessToken(userData) {
   return [
-    jwt.sign({ user: userData }, config.jwt_secret, {
-      expiresIn: String(expiresIn),
-    }),
+    jwt.sign(
+      { user: userData },
+      config.jwt_secret ?? process.env.SECRET_TOKEN,
+      {
+        expiresIn: String(expiresIn),
+      }
+    ),
     expiresIn,
   ];
 }
 
 function generateRefreshToken(userData) {
-  console.log("jwt", config.jwt_refresh_secret);
+  console.log(
+    "jwt",
+    config.jwt_refresh_secret ?? process.env.REFRESH_SECRET_TOKEN
+  );
 
   return jwt.sign({ user: userData }, config.jwt_refresh_secret, {
     expiresIn: constants.time.REFRESH_TOKEN_EXPIRES_IN,

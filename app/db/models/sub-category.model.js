@@ -78,10 +78,22 @@ const create = async (req) => {
 };
 
 const get = async (req) => {
-  let whereQuery = "";
+  let whereConditions = [];
+  const queryParams = {};
   let q = req.query.q;
   if (q) {
-    whereQuery = `WHERE sbcat.name ILIKE '%${q}%' OR cat.name ILIKE '%${q}%'`;
+    whereConditions.push(`sbcat.name ILIKE :query OR cat.name ILIKE :query`);
+    queryParams.query = `%${q}%`;
+  }
+
+  const featured = req.query.featured;
+  if (featured) {
+    whereConditions.push(`sbcat.is_featured = true`);
+  }
+
+  let whereClause = "";
+  if (whereConditions.length > 0) {
+    whereClause = "WHERE " + whereConditions.join(" AND ");
   }
 
   let query = `
@@ -95,11 +107,11 @@ const get = async (req) => {
       cat.name as category_name
     FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
     LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
-    ${whereQuery}
+    ${whereClause}
     ORDER BY sbcat.created_at DESC
   `;
-
   return await SubCategoryModel.sequelize.query(query, {
+    replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
   });
