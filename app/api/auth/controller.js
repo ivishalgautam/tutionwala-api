@@ -105,12 +105,24 @@ const otpVerify = async (req, res) => {
   const [jwtToken, expiresIn] = authToken.generateAccessToken(userData);
   const refreshToken = authToken.generateRefreshToken(userData);
 
+  let user = null;
+
+  if (userData.role === "tutor") {
+    user = await table.TutorModel.getByUserId(0, userData.id);
+  } else {
+    user = await table.StudentModel.getByUserId(0, userData.id);
+  }
+
+  console.log({ user });
+
   return res.send({
     status: true,
     token: jwtToken,
     expire_time: Date.now() + expiresIn,
     refresh_token: refreshToken,
     user_data: userData,
+    is_profile_completed: user.is_profile_completed,
+    curr_step: user.curr_step,
   });
 };
 

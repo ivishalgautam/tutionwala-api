@@ -208,7 +208,7 @@ const getById = async (req, id) => {
 const getByUserId = async (req, user_id) => {
   return await TutorModel.findOne({
     where: {
-      user_id: req.user_data.id || user_id,
+      user_id: req?.user_data?.id || user_id,
     },
     raw: true,
   });
