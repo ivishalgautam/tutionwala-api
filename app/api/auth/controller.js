@@ -49,7 +49,8 @@ const otpSend = async (req, res) => {
     return res.code(404).send({ message: "Customer not found!" });
   }
 
-  if (!record.is_active)
+  // ! remove false
+  if (false && !record.is_active)
     return res
       .code(400)
       .send({ message: "Please contact administrator for login!" });
@@ -60,10 +61,7 @@ const otpSend = async (req, res) => {
   req.body.mobile_number = record.mobile_number;
   req.body.country_code = record.country_code;
   req.body.otp = otp;
-
   if (record) {
-    await table.OtpModel.update(req);
-  } else {
     await table.OtpModel.create(req);
   }
 
@@ -75,7 +73,7 @@ const otpVerify = async (req, res) => {
   const record = await table.OtpModel.getByMobile(req);
 
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Resend OTP!" });
+    return ErrorHandler({ code: 404, message: "Resend OTP!" });
   }
 
   const isExpired = moment(record.created_at)
