@@ -67,7 +67,7 @@ const otpSend = async (req, res) => {
     await table.OtpModel.create(req);
   }
 
-  return res.send({ status: true, message: "Otp sent." });
+  return res.send({ status: true, message: "Otp sent.", otp });
 };
 
 const otpVerify = async (req, res) => {
