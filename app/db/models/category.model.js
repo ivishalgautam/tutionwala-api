@@ -76,9 +76,13 @@ const get = async (req) => {
       cat.name,
       cat.image,
       cat.slug,
-      cat.created_at
+      cat.created_at,
+      COUNT(subcat.id)::integer as courses
     FROM ${constants.models.CATEGORY_TABLE} cat
+    LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.category_id = cat.id
     ${whereClause}
+    GROUP BY
+      cat.id
     ORDER BY cat.created_at DESC
   `;
   return await CategoryModel.sequelize.query(query, {

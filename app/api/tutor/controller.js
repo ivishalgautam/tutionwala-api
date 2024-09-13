@@ -6,7 +6,6 @@ import { ErrorHandler } from "../../helpers/handleError.js";
 const { NOT_FOUND } = constants.http.status;
 
 const updateById = async (req, res) => {
-  console.log(req.body);
   const record = await table.TutorModel.getById(req);
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });
@@ -21,6 +20,15 @@ const updateById = async (req, res) => {
     return ErrorHandler({ code: 500, message: "Error updating tutor!" });
 
   res.send({ status: true, message: "Updated" });
+};
+
+const getById = async (req, res) => {
+  const record = await table.TutorModel.getById(req);
+  if (!record) {
+    return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });
+  }
+
+  res.send({ status: true, data: record });
 };
 
 const getByUserId = async (req, res) => {
@@ -66,4 +74,5 @@ export default {
   getByUserId: getByUserId,
   get: get,
   getFilteredTutors: getFilteredTutors,
+  getById: getById,
 };

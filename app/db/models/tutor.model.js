@@ -157,11 +157,51 @@ const getFilteredTutors = async (req) => {
 };
 
 const getById = async (req, id) => {
-  return await TutorModel.findOne({
-    where: {
-      id: req?.params?.id || id,
-    },
+  let query = `
+  SELECT
+      tr.id,
+      tr.user_id,
+      tr.is_profile_completed,
+      tr.created_at,
+      tr.updated_at,
+        jsonb_path_query_first(
+          json_agg(
+            json_build_object(
+              'id', usr.id,
+              'mobile_number', usr.mobile_number,
+              'fullname', usr.fullname,
+              'email', usr.email,
+              'profile_picture', usr.profile_picture,
+              'experience', tr.experience
+            )
+          )::jsonb, '$[0]'
+      ) as user,
+      json_agg(
+        json_build_object(
+          'id', subcat.id,
+          'name', subcat.name,
+          'image', subcat.image,
+          'slug', subcat.slug,
+          'category_name', cat.name
+        )
+      ) as courses
+    FROM ${constants.models.TUTOR_TABLE} tr
+    LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = tr.user_id
+    LEFT JOIN ${
+      constants.models.SUB_CATEGORY_TABLE
+    } subcat ON subcat.id = ANY(tr.sub_categories)
+    LEFT JOIN ${
+      constants.models.CATEGORY_TABLE
+    } cat ON cat.id = subcat.category_id 
+    WHERE tr.id = '${req.params.id || id}'
+    GROUP BY
+      tr.id
+  `;
+
+  return await TutorModel.sequelize.query(query, {
+    type: QueryTypes.SELECT,
     raw: true,
+    plain: true,
   });
 };
 

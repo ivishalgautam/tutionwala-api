@@ -128,7 +128,6 @@ const getById = async (req, res) => {
 
 const get = async (req, res) => {
   const products = await table.SubCategoryModel.get(req);
-  console.log({ products });
   res.send({ status: true, data: products });
 };
 

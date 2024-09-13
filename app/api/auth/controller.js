@@ -62,6 +62,8 @@ const otpSend = async (req, res) => {
   req.body.otp = otp;
 
   if (record) {
+    await table.OtpModel.update(req);
+  } else {
     await table.OtpModel.create(req);
   }
 

@@ -22,13 +22,6 @@ const config = {
   smtp_port: parseInt(process.env.SMTP_PORT) || 465,
   smtp_host: process.env.SMTP_SERVER || "smtp.gmail.com",
   smtp_password: process.env.SMTP_PASSWORD,
-
-  // zoom creds
-  zoom_client_id: process.env.ZOOM_CLIENT_ID,
-  zoom_client_secret: process.env.ZOOM_CLIENT_SECRET,
-  zoom_account_id: process.env.ZOOM_ACCOUNT_ID,
-  zoom_oauth_url: process.env.ZOOM_OAUTH_URL,
-  zoom_base_url: process.env.ZOOM_BASE_URL,
 };
 
 export default config;

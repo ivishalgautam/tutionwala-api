@@ -14,4 +14,5 @@ export default async function routes(fastify, options) {
 export async function publicRoutes(fastify, options) {
   fastify.get("/", {}, controller.get);
   fastify.post("/filter", {}, controller.getFilteredTutors);
+  fastify.get("/:id", { schema: schema.checkParam }, controller.getById);
 }
