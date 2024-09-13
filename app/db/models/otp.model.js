@@ -28,10 +28,6 @@ const init = async (sequelize) => {
         validate: {
           notEmpty: true,
         },
-        unique: {
-          args: true,
-          msg: "Mobile number already in use!",
-        },
       },
       country_code: {
         type: DataTypes.STRING,
