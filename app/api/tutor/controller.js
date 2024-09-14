@@ -11,7 +11,7 @@ const updateById = async (req, res) => {
     return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });
   }
   const currStep = req.body.curr_step;
-  req.body.curr_step = currStep < 3 ? currStep + 1 : 3;
+  req.body.curr_step = Number(currStep) < 3 ? Number(currStep) + 1 : 3;
   if (currStep === 3) {
     req.body.is_profile_completed = true;
   }

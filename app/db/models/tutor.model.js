@@ -60,6 +60,10 @@ const init = async (sequelize) => {
         type: DataTypes.TEXT,
         defaultValue: "",
       },
+      intro_video: {
+        type: DataTypes.TEXT,
+        defaultValue: "",
+      },
       is_profile_completed: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -83,6 +87,7 @@ const create = async (req) => {
     user_id: req.body.user_id,
     sub_categories: req.body.sub_categories,
     location: req.body.location,
+    intro_video: req.body.intro_video,
   });
 };
 
@@ -226,6 +231,7 @@ const update = async (req, id) => {
       curr_step: req.body.curr_step,
       adhaar: req.body.adhaar,
       is_profile_completed: req.body.is_profile_completed,
+      intro_video: req.body.intro_video,
     },
     {
       where: {
