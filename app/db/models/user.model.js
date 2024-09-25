@@ -65,6 +65,11 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      gender: {
+        type: DataTypes.ENUM({ values: ["male", "female", ""] }),
+        allowNull: false,
+        defaultValue: "",
+      },
       profile_picture: {
         type: DataTypes.STRING,
         defaultValue: "",
@@ -125,6 +130,7 @@ const createCustomer = async (req) => {
     fullname: req.body?.fullname,
     email: req.body?.email,
     mobile_number: req.body?.mobile_number,
+    gender: req.body?.gender,
     country_code: req.body?.country_code?.replace(/\s/g, ""),
     role: req.body?.role,
     profile_picture: req.body?.profile_picture,
@@ -155,7 +161,7 @@ const getById = async (req, id) => {
         usr.mobile_number,
         usr.country_code,
         usr.is_verified,
-        usr.profile_picture,
+        ttr.profile_picture,
         json_agg(
           json_build_object(
             'id', subcat.id,
@@ -167,14 +173,17 @@ const getById = async (req, id) => {
         constants.models.TUTOR_TABLE
       } ttr ON ttr.user_id = usr.id AND usr.role = 'tutor'
       LEFT JOIN ${
+        constants.models.TUTOR_COURSE_TABLE
+      } ttrcrs ON ttrcrs.tutor_id = ttr.id
+      LEFT JOIN ${
         constants.models.STUDENT_TABLE
       } stu ON stu.user_id = usr.id AND usr.role = 'student'
       LEFT JOIN ${
         constants.models.SUB_CATEGORY_TABLE
-      } subcat ON subcat.id = ANY(ttr.sub_categories) OR subcat.id = ANY(stu.sub_categories)
+      } subcat ON subcat.id = ttrcrs.course_id OR subcat.id = ANY(stu.sub_categories)
       WHERE usr.id = '${req?.params?.id || id}'
       GROUP BY
-          usr.id
+          usr.id, ttr.profile_picture
       LIMIT 1
     `;
 
@@ -233,8 +242,9 @@ const getByMobile = async (req, record = undefined) => {
         ) as sub_categories
       FROM ${constants.models.USER_TABLE} usr
       LEFT JOIN ${constants.models.TUTOR_TABLE} ttr ON ttr.user_id = usr.id AND usr.role = 'tutor'
+      LEFT JOIN ${constants.models.TUTOR_COURSE_TABLE} ttrcrs ON ttrcrs.tutor_id = ttr.id
       LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.user_id = usr.id AND usr.role = 'student'
-      LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.id = ANY(ttr.sub_categories) OR subcat.id = ANY(stu.sub_categories)
+      LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.id = ttrcrs.course_id
       WHERE usr.mobile_number = '${req?.body?.mobile_number}'
       GROUP BY
           usr.id
@@ -255,6 +265,7 @@ const update = async (req) => {
       fullname: req.body?.fullname,
       email: req.body?.email,
       mobile_number: req.body?.mobile_number,
+      gender: req.body?.gender,
       country_code: req.body?.country_code?.replace(/\s/g, ""),
       role: req.body?.role,
       profile_picture: req.body?.profile_picture,

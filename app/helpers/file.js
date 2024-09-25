@@ -3,10 +3,14 @@ import fs from "fs";
 import pump from "pump";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+import crypto from "crypto";
 
 import constants from "../lib/constants/index.js";
 import { ErrorHandler } from "./handleError.js";
 const { imageMime, videoMime, docsMime } = constants.mime;
+
+const randomBytesGenerator = (byte = 32) =>
+  crypto.randomBytes(byte).toString("hex");
 
 export const uploadFiles = async (req, isFileUpload = false) => {
   const path = [];
@@ -14,7 +18,6 @@ export const uploadFiles = async (req, isFileUpload = false) => {
   const parts = req.parts();
 
   for await (const file of parts) {
-    console.log({ file });
     if (file.type !== "file") {
       body[file.fieldname] = file.value;
       continue;
@@ -33,6 +36,7 @@ export const uploadFiles = async (req, isFileUpload = false) => {
     }
 
     const filename = file.filename.replace(/[\s'/]/g, "_").toLowerCase();
+    // const filename = randomBytesGenerator();
     const filePath = `${folder}${Date.now()}_${filename}`;
 
     await fs.promises.mkdir(folder, { recursive: true });

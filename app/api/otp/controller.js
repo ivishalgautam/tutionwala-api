@@ -41,7 +41,6 @@ const verify = async (req, res) => {
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Resend OTP!" });
   }
-  console.log({ record });
   const isExpired = moment(record.created_at)
     .add(5, "minutes")
     .isBefore(moment());
@@ -60,7 +59,10 @@ const verify = async (req, res) => {
   req.body.user_id = newUser.id;
 
   if (newUser.role === "tutor") {
-    await table.TutorModel.create(req);
+    const tutor = await table.TutorModel.create(req);
+    req.body.tutor_id = tutor.id;
+    req.body.course_id = req.body.sub_categories;
+    await table.TutorCourseModel.create(req);
   }
 
   if (newUser.role === "student") {

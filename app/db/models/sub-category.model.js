@@ -216,7 +216,7 @@ const getBySlug = async (req, slug) => {
       ON sbj.board_id = brd.id
     GROUP BY brd.name
   ) AS board_data ON board_data.board_name = brd.name
-  WHERE sbcat.slug = '${req.params.slug || slug}'
+  WHERE sbcat.slug = '${req.params?.slug || slug}'
   GROUP BY sbcat.id
   ORDER BY sbcat.created_at DESC;
   `;

@@ -7,6 +7,7 @@ import { ErrorHandler } from "../../helpers/handleError.js";
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } = constants.http.status;
 
 const create = async (req, res) => {
+  console.log("create followup", req.body);
   const student = await table.StudentModel.getById(0, req.body.student_id);
 
   if (!student)
@@ -50,7 +51,7 @@ const updateById = async (req, res) => {
     return ErrorHandler({ code: NOT_FOUND, message: "Follow up not found!" });
   }
 
-  res.send({ status: true, data: record });
+  res.send({ status: true, message: "Updated.", data: record });
 };
 
 const get = async (req, res) => {

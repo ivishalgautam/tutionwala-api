@@ -36,6 +36,13 @@ const init = async (sequelize) => {
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
       },
+      status: {
+        type: DataTypes.ENUM({ values: ["converted", "pending"] }),
+        defaultValue: "pending",
+        validate: {
+          isIn: [["converted", "pending"]],
+        },
+      },
     },
     {
       createdAt: "created_at",
@@ -67,6 +74,7 @@ const get = async (req) => {
     SELECT
         enq.id,
         enq.created_at,
+        enq.status,
         json_agg(
           json_build_object(
             'user_id', stuusr.id,
@@ -103,6 +111,7 @@ const update = async (req, id) => {
   const [rowCount, rows] = await EnquiryModel.update(
     {
       name: req.body.name,
+      status: req.body.status,
     },
     {
       where: {
@@ -119,8 +128,9 @@ const update = async (req, id) => {
 const getById = async (req, id) => {
   return await EnquiryModel.findOne({
     where: {
-      id: req.params.id || id,
+      id: req.params?.id || id,
     },
+    raw: true,
   });
 };
 

@@ -4,6 +4,7 @@ import constants from "../lib/constants/index.js";
 import config from "../config/index.js";
 import table from "../db/models.js";
 import jwt from "jsonwebtoken";
+import { ErrorHandler } from "./handleError.js";
 
 const expiresIn = constants.time.TOKEN_EXPIRES_IN;
 
@@ -24,7 +25,6 @@ function generateRefreshToken(userData) {
 
 const verifyToken = async (req, res) => {
   const authHeader = req.headers["authorization"];
-
   if (!authHeader) {
     res.code(401).send({ message: "unauthorized!" });
   }
@@ -49,7 +49,10 @@ const verifyToken = async (req, res) => {
     req.user_data = userData;
     req.decoded = decoded;
   } catch (error) {
-    return res.code(401).send({ message: "Invalid token or token expired" });
+    return ErrorHandler({
+      code: 401,
+      message: error.message ?? "Invalid token or token expired",
+    });
   }
   return;
 };

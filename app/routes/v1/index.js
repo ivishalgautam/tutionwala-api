@@ -8,6 +8,7 @@ import tutorRoutes from "../../api/tutor/routes.js";
 import studentRoutes from "../../api/student/routes.js";
 import enquiryRoutes from "../../api/enquiry/routes.js";
 import followUpRoutes from "../../api/followup/routes.js";
+import reviewRoutes from "../../api/review/routes.js";
 
 export default async function routes(fastify, options) {
   fastify.addHook("onRequest", jwtVerify.verifyToken);
@@ -20,4 +21,5 @@ export default async function routes(fastify, options) {
   fastify.register(studentRoutes, { prefix: "students" });
   fastify.register(enquiryRoutes, { prefix: "enquiries" });
   fastify.register(followUpRoutes, { prefix: "followUps" });
+  fastify.register(reviewRoutes, { prefix: "reviews" });
 }

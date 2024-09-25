@@ -113,7 +113,7 @@ const checkUsername = async (req, res) => {
 
 const getUser = async (req, res) => {
   const record = await table.UserModel.getById(0, req.user_data.id);
-  console.log({ record });
+
   if (!record) {
     return ErrorHandler({ code: 401, messaege: "invalid token" });
   }

@@ -52,6 +52,8 @@ const constants = {
     SUB_CATEGORY_FIELDS_TABLE: "sub_categories_fields",
     BOARD_TABLE: "boards",
     SUBJECT_TABLE: "subjects",
+    REVIEW_TABLE: "reviews",
+    TUTOR_COURSE_TABLE: "tutor_courses",
     ENQUIRY_TABLE: "enquiries",
     FOLLOW_UP_TABLE: "follow_ups",
   },

@@ -46,7 +46,7 @@ const otpSend = async (req, res) => {
   const record = await table.UserModel.getByMobile(req);
 
   if (!record) {
-    return res.code(404).send({ message: "Customer not found!" });
+    return ErrorHandler({ code: 404, message: "Customer not found!" });
   }
 
   // ! remove false
@@ -112,8 +112,6 @@ const otpVerify = async (req, res) => {
   } else {
     user = await table.StudentModel.getByUserId(0, userData.id);
   }
-
-  console.log({ user });
 
   return res.send({
     status: true,

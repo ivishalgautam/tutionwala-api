@@ -22,7 +22,9 @@ const create = async (req, res) => {
     tutor.id,
     student.id
   );
-  if (enquiry) {
+
+  // ! remove false
+  if (false && enquiry) {
     return ErrorHandler({ code: 400, message: "Already enquired!" });
   }
 
@@ -35,6 +37,15 @@ const create = async (req, res) => {
 
 const get = async (req, res) => {
   res.send({ status: true, data: await table.EnquiryModel.get(req) });
+};
+
+const update = async (req, res) => {
+  const record = await table.EnquiryModel.getById(req);
+  if (!record)
+    return ErrorHandler({ code: 404, message: "Enquiry not found!" });
+
+  await table.EnquiryModel.update(req);
+  res.send({ status: true, message: "Enquiry deleted." });
 };
 
 const deleteById = async (req, res) => {
@@ -50,4 +61,5 @@ export default {
   create: create,
   get: get,
   deleteById: deleteById,
+  update: update,
 };

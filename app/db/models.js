@@ -10,6 +10,8 @@ import tutorModel from "./models/tutor.model.js";
 import enquiryModel from "./models/enquiry.model.js";
 import studentModel from "./models/student.model.js";
 import followupModel from "./models/followup.model.js";
+import tutorCourseModel from "./models/tutor-course.model.js";
+import reviewModel from "./models/review.model.js";
 
 export default {
   UserModel: userModel,
@@ -23,4 +25,6 @@ export default {
   SubCatAndBoardMappingModel: subCategoryAndBoardMappingModel,
   EnquiryModel: enquiryModel,
   FollowupModel: followupModel,
+  TutorCourseModel: tutorCourseModel,
+  ReviewModel: reviewModel,
 };
