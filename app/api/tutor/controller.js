@@ -6,6 +6,7 @@ import { ErrorHandler } from "../../helpers/handleError.js";
 const { NOT_FOUND } = constants.http.status;
 
 const createCourse = async (req, res) => {
+  console.log(req.body);
   const tutor = await table.TutorModel.getByUserId(req);
   if (!tutor)
     return ErrorHandler({ code: 404, message: "Tutor not registered!" });
@@ -33,15 +34,16 @@ const createCourse = async (req, res) => {
 };
 
 const updateById = async (req, res) => {
+  console.log(req.body);
   const record = await table.TutorModel.getById(req);
-  console.log({ record });
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });
   }
 
-  const currStep = req.body.curr_step;
-
-  req.body.curr_step = Number(currStep) < 3 ? Number(currStep) + 1 : 3;
+  const currStep = req.body?.curr_step ?? null;
+  if (currStep) {
+    req.body.curr_step = Number(currStep) < 3 ? Number(currStep) + 1 : 3;
+  }
 
   if (currStep === 3) {
     req.body.is_profile_completed = true;
@@ -55,7 +57,6 @@ const updateById = async (req, res) => {
     const tutorCourse = await table.TutorCourseModel.findFirstUserCourse(
       record.id
     );
-    console.log({ tutorCourse });
     let newReq = {
       ...req,
       body: { ...req.body },
@@ -79,6 +80,10 @@ const getById = async (req, res) => {
   }
 
   res.send({ status: true, data: record });
+};
+
+const getTutorDetail = async (req, res) => {
+  res.send({ status: true, data: await table.TutorModel.getByUserId(req) });
 };
 
 const deleteTutorCourseById = async (req, res) => {
@@ -149,4 +154,5 @@ export default {
   getCourses: getCourses,
   createCourse: createCourse,
   deleteTutorCourseById: deleteTutorCourseById,
+  getTutorDetail: getTutorDetail,
 };

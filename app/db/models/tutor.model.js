@@ -5,6 +5,7 @@ import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 import { Op } from "sequelize";
 import moment from "moment";
 import { isValidDegree, isValidLanguage } from "../../lib/validations/index.js";
+import { ErrorHandler } from "../../helpers/handleError.js";
 
 let TutorModel = null;
 
@@ -64,10 +65,39 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      degree: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+      },
+      coords: {
+        type: DataTypes.ARRAY(DataTypes.FLOAT),
+        defaultValue: [0, 0],
+      },
+      enquiry_radius: {
+        type: DataTypes.INTEGER, // in km
+      },
+      class_conduct_mode: {
+        type: DataTypes.ENUM({
+          values: ["offline", "online", "nearby", "any"],
+        }),
+        defaultValue: "offline",
+        validate: {
+          isIn: [["offline", "online", "nearby", "any"]],
+        },
+      },
     },
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
+      validate: {
+        bothCoordsOrNone() {
+          if ((this.coords[0] === null) !== (this.coords[1] === null)) {
+            return ErrorHandler({
+              message: "Either both latitude and longitude, or neither!",
+            });
+          }
+        },
+      },
     }
   );
 
@@ -79,6 +109,10 @@ const create = async (req) => {
     user_id: req.body.user_id,
     location: req.body.location,
     intro_video: req.body.intro_video,
+    coords: req.body.coords,
+    enquiry_radius: req.body.enquiry_radius,
+    class_conduct_mode: req.body.class_conduct_mode,
+    degree: req.body.degree,
   });
 
   return tutor.dataValues;
@@ -385,16 +419,22 @@ const update = async (req, id) => {
   const [rowCount, rows] = await TutorModel.update(
     {
       user_id: req.body.user_id,
-      fields: req.body.fields,
-      boards: req.body.boards,
       languages: req.body.languages,
+      degree: req.body.degree,
+      class_conduct_mode: req.body.class_conduct_mode,
+      enquiry_radius: req.body.enquiry_radius,
+      boards: req.body.boards,
+      fields: req.body.fields,
       sub_categories: req.body.sub_categories,
-      experience: req.body.experience,
-      curr_step: req.body.curr_step,
-      adhaar: req.body.adhaar,
-      profile_picture: req.body.profile_picture,
       is_profile_completed: req.body.is_profile_completed,
+      curr_step: req.body.curr_step,
+      coords: req.body.coords,
+
+      experience: req.body.experience,
+      profile_picture: req.body.profile_picture,
       intro_video: req.body.intro_video,
+
+      adhaar: req.body.adhaar,
     },
     {
       where: {

@@ -9,6 +9,7 @@ export default async function routes(fastify, options) {
     { schema: schema.checkParam },
     controller.getByUserId
   );
+  fastify.get("/getTutorDetail", {}, controller.getTutorDetail);
   fastify.get("/courses", {}, controller.getCourses);
   fastify.delete("/courses/:id", {}, controller.deleteTutorCourseById);
   fastify.post("/courses", {}, controller.createCourse);
