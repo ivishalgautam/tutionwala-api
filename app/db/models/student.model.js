@@ -64,6 +64,10 @@ const init = async (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      coords: {
+        type: DataTypes.ARRAY(DataTypes.FLOAT),
+        defaultValue: [0, 0],
+      },
     },
     {
       createdAt: "created_at",
@@ -79,6 +83,7 @@ const create = async (req) => {
     user_id: req.body?.user_id,
     sub_categories: req.body.sub_categories,
     location: req.body.location,
+    coords: req.body.coords,
   });
 };
 
@@ -109,6 +114,7 @@ const update = async (req, id) => {
       profile_picture: req.body.profile_picture,
       adhaar: req.body.adhaar,
       is_profile_completed: req.body.is_profile_completed,
+      coords: req.body.coords,
     },
     {
       where: {

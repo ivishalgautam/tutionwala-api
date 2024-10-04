@@ -19,6 +19,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
+  console.log(req.body);
   const record = await table.UserModel.getById(req);
   if (!record) {
     return ErrorHandler({ code: 404, message: "User not exists" });
@@ -26,7 +27,7 @@ const update = async (req, res) => {
 
   const user = await table.UserModel.update(req);
 
-  if (user && req.body.password) {
+  if (user && req?.body?.password) {
     req.body.new_password = req.body.password;
     await table.UserModel.updatePassword(req, req.user_data.id);
   }

@@ -38,7 +38,12 @@ const create = async (req, res) => {
 
 const updateById = async (req, res) => {
   const { id } = req.params; // Subcategory ID
-  const { is_boards, board_ids } = req.body; //  board IDs
+  const { is_boards, board_ids, name } = req.body; //  board IDs
+  let slug = "";
+  if (name) {
+    slug = slugify(req.body?.name, { lower: true });
+    req.body.slug = slug;
+  }
 
   const record = await table.SubCategoryModel.getById(req, req.params.id);
 
@@ -100,16 +105,21 @@ const getBySlug = async (req, res) => {
   });
 };
 
-const getByCategory = async (req, res) => {
+const getByCategorySlug = async (req, res) => {
   const record = await table.CategoryModel.getBySlug(req, req.params.slug);
 
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Category not found!" });
   }
 
+  const { courses, total } = await table.SubCategoryModel.getByCategorySlug(
+    req
+  );
+
   res.send({
     status: true,
-    data: await table.SubCategoryModel.getByCategory(req, req.params.slug),
+    data: courses,
+    total,
   });
 };
 
@@ -153,6 +163,6 @@ export default {
   updateById: updateById,
   deleteById: deleteById,
   getBySlug: getBySlug,
-  getByCategory: getByCategory,
+  getByCategorySlug: getByCategorySlug,
   getById: getById,
 };

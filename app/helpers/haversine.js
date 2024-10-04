@@ -7,7 +7,7 @@
  * @param lon2 - The parameter "lon2" represents the longitude of the second location.
  * @returns the distance between two points on the Earth's surface in kilometers.
  */
-function haversine(lat1, lon1, lat2, lon2) {
+export function haversine(lat1, lon1, lat2, lon2) {
   const radius = 6371; // Radius of the Earth in kilometers
 
   // Convert latitude and longitude from degrees to radians
@@ -31,4 +31,26 @@ function haversine(lat1, lon1, lat2, lon2) {
   return distanceMeters;
 }
 
-export default { haversine: haversine };
+export function isWithinRadius(lat1, lng1, lat2, lng2) {
+  const earthRadiusKm = 6371; // Radius of the Earth in kilometers
+
+  // Convert degrees to radians
+  const toRadians = (degrees) => degrees * (Math.PI / 180);
+
+  // Latitude and longitude in radians
+  const lat1Rad = toRadians(lat1);
+  const lng1Rad = toRadians(lng1);
+  const lat2Rad = toRadians(lat2);
+  const lng2Rad = toRadians(lng2);
+
+  // Haversine formula
+  const distance =
+    earthRadiusKm *
+    Math.acos(
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.cos(lng2Rad - lng1Rad) +
+        Math.sin(lat1Rad) * Math.sin(lat2Rad)
+    );
+
+  // Check if the distance is within the radius
+  return distance;
+}

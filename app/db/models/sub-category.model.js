@@ -87,9 +87,18 @@ const get = async (req) => {
   }
 
   const featured = req.query.featured;
+  const isBoards = req.query.isBoards;
+
   if (featured) {
     whereConditions.push(`sbcat.is_featured = true`);
   }
+  if (isBoards) {
+    whereConditions.push(`sbcat.is_boards = true`);
+  }
+
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+  const offset = (page - 1) * limit;
 
   let whereClause = "";
   if (whereConditions.length > 0) {
@@ -109,9 +118,11 @@ const get = async (req) => {
     LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
     ${whereClause}
     ORDER BY sbcat.created_at DESC
+    LIMIT :limit OFFSET :offset
   `;
+
   return await SubCategoryModel.sequelize.query(query, {
-    replacements: { ...queryParams },
+    replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
@@ -249,6 +260,71 @@ const countCategories = async (last_30_days = false) => {
   });
 };
 
+const getByCategorySlug = async (req, slug) => {
+  let whereConditions = [`cat.slug = '${req?.params?.slug || slug}'`];
+  const queryParams = {};
+  let q = req.query.q;
+  if (q) {
+    whereConditions.push(`sbcat.name ILIKE :query OR cat.name ILIKE :query`);
+    queryParams.query = `%${q}%`;
+  }
+
+  const featured = req.query.featured;
+  if (featured) {
+    whereConditions.push(`sbcat.is_featured = true`);
+  }
+
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+  const offset = (page - 1) * limit;
+
+  let whereClause = "";
+  if (whereConditions.length > 0) {
+    whereClause = "WHERE " + whereConditions.join(" AND ");
+  }
+
+  let countQuery = `
+  SELECT
+    COUNT(sbcat.id) OVER()::integer AS total
+  FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
+  LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
+  ${whereClause}
+  ORDER BY sbcat.created_at DESC
+  LIMIT :limit OFFSET :offset
+`;
+
+  let query = `
+    SELECT
+      sbcat.id,
+      sbcat.name,
+      sbcat.image,
+      sbcat.slug,
+      sbcat.is_boards,
+      sbcat.created_at,
+      cat.name as category_name
+    FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
+    LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
+    ${whereClause}
+    ORDER BY sbcat.created_at DESC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  const data = await SubCategoryModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+  const count = await SubCategoryModel.sequelize.query(countQuery, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+
+  let total = count?.[0]?.total;
+
+  return { courses: data, total };
+};
+
 export default {
   init: init,
   create: create,
@@ -258,4 +334,5 @@ export default {
   getBySlug: getBySlug,
   deleteById: deleteById,
   countCategories: countCategories,
+  getByCategorySlug: getByCategorySlug,
 };

@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { Deferrable, Op } from "sequelize";
+import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let ReviewModel = null;
@@ -84,8 +84,40 @@ const create = async (req) => {
 };
 
 const get = async (req) => {
-  return await ReviewModel.findAll({
-    order: [["created_at", "DESC"]],
+  const whereConditions = [];
+  let queryParams = {};
+
+  const minRating = req.params.minRating;
+  if (minRating) {
+    whereConditions.push(`rvw.rating >= :minRating`);
+    queryParams.minRating = minRating;
+  }
+
+  let whereClause = "";
+
+  if (whereConditions.length > 1) {
+    whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+  }
+
+  let query = `
+  SELECT
+      rvw.id,
+      rvw.rating,
+      rvw.review,
+      rvw.created_at,
+      ttrusr.fullname as tutor_name,
+      ttrusr.profile_picture as tutor_profile,
+      stuusr.fullname as student_name
+    FROM ${constants.models.REVIEW_TABLE} rvw
+    LEFT JOIN ${constants.models.TUTOR_TABLE} ttr ON ttr.id = rvw.tutor_id
+    LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = rvw.student_id
+    LEFT JOIN ${constants.models.USER_TABLE} ttrusr ON ttrusr.id = ttr.user_id 
+    LEFT JOIN ${constants.models.USER_TABLE} stuusr ON stuusr.id = stu.user_id 
+    ${whereClause}
+  `;
+  return await ReviewModel.sequelize.query(query, {
+    type: QueryTypes.SELECT,
+    raw: true,
   });
 };
 

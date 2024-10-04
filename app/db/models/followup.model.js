@@ -112,7 +112,7 @@ const get = async (req) => {
   const { role, id } = req.user_data;
   let whereQuery = "";
   if (role === "tutor") {
-    whereQuery = `usr.id = '${id}'`;
+    whereQuery = `WHERE usr.id = '${id}'`;
   }
 
   let query = `
@@ -122,6 +122,7 @@ const get = async (req) => {
       LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = fu.tutor_id
       LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = tut.user_id
       ${whereQuery}
+      ORDER BY fu.created_at DESC
     `;
 
   return await FollowUpModel.sequelize.query(query, {
@@ -148,6 +149,7 @@ const getByStudentId = async (req, id) => {
 const deleteById = async (req, id) => {
   return await FollowUpModel.destroy({
     where: { id: req.params.id || id },
+    order: [["created_at", "DESC"]],
   });
 };
 

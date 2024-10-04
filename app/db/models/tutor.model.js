@@ -1,12 +1,7 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import hash from "../../lib/encryption/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
-import { Op } from "sequelize";
-import moment from "moment";
-import { isValidDegree, isValidLanguage } from "../../lib/validations/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
-
 let TutorModel = null;
 
 const init = async (sequelize) => {
@@ -72,6 +67,15 @@ const init = async (sequelize) => {
       coords: {
         type: DataTypes.ARRAY(DataTypes.FLOAT),
         defaultValue: [0, 0],
+        validate: {
+          bothCoordsOrNone(coords) {
+            if ((coords[0] === null) !== (coords[1] === null)) {
+              return ErrorHandler({
+                message: "Either both latitude and longitude, or neither!",
+              });
+            }
+          },
+        },
       },
       enquiry_radius: {
         type: DataTypes.INTEGER, // in km
@@ -89,15 +93,6 @@ const init = async (sequelize) => {
     {
       createdAt: "created_at",
       updatedAt: "updated_at",
-      validate: {
-        bothCoordsOrNone() {
-          if ((this.coords[0] === null) !== (this.coords[1] === null)) {
-            return ErrorHandler({
-              message: "Either both latitude and longitude, or neither!",
-            });
-          }
-        },
-      },
     }
   );
 
@@ -141,12 +136,21 @@ const getCourses = async (req) => {
 const get = async (req, id) => {
   let whereConditions = ["tr.is_profile_completed = true"];
   const queryParams = {};
-  console.log({ language: req.query.language });
 
   const category = req.query.category?.split(" ") ?? [];
   const language = req.query.language ? req.query.language?.split(" ") : [];
-  const minAvgRating = req.query.rating ? Number(req.query.rating) : null;
+  const minAvgRating = req.query.rating
+    ? req.query.rating.split(" ") ?? []
+    : null;
   const gender = req.query.gender ? req.query.gender : null;
+  const address = req.query.addr ? req.query.addr : null;
+  const lat = req.query.lat ? Number(req.query.lat) : null;
+  const lng = req.query.lng ? Number(req.query.lng) : null;
+  const isDemo = req.query.demo
+    ? req.query.demo === "yes"
+      ? true
+      : false
+    : null;
 
   if (category.length) {
     whereConditions.push(`subcat.slug = ANY(:category)`);
@@ -163,15 +167,15 @@ const get = async (req, id) => {
     queryParams.language = `{${language.join(",")}}`;
   }
 
-  if (minAvgRating !== null) {
+  if (minAvgRating?.length) {
     whereConditions.push(`
       COALESCE(
         (SELECT AVG(rvw.rating)::FLOAT
           FROM ${constants.models.REVIEW_TABLE} rvw 
           WHERE rvw.tutor_id = tr.id), 0.0
-      ) >= :minAvgRating
+      ) = ANY(:minAvgRating)
     `);
-    queryParams.minAvgRating = minAvgRating;
+    queryParams.minAvgRating = `{${minAvgRating.join(",")}}`;
   }
 
   if (gender) {
@@ -179,10 +183,29 @@ const get = async (req, id) => {
     queryParams.gender = gender;
   }
 
+  if (address && lat && lng) {
+    whereConditions.push(`
+      ((
+        6371 * acos(
+          cos(radians(:lat)) * cos(radians(tr.coords[1])) * 
+          cos(radians(tr.coords[2]) - radians(:lng)) + 
+          sin(radians(:lat)) * sin(radians(tr.coords[1]))
+        )
+      ) <= tr.enquiry_radius OR tr.location = :address)
+    `);
+    queryParams.lat = lat;
+    queryParams.lng = lng;
+    queryParams.address = address;
+  }
+
+  if (isDemo) {
+    whereConditions.push(`trcrs.is_demo_class = :is_demo_class`);
+    queryParams.is_demo_class = isDemo;
+  }
+
   const limit = req.query.limit ? Number(req.query.limit) : 10;
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
   const offset = (page - 1) * limit;
-
   let whereClause = "";
   if (whereConditions) {
     whereClause = `WHERE ${whereConditions.join(" AND ")}`;
@@ -204,21 +227,20 @@ const get = async (req, id) => {
 
   let query = `
   SELECT
-      tr.id,
-      tr.user_id,
-      tr.is_profile_completed,
-      tr.created_at,
-      tr.updated_at,
+      tr.id, tr.user_id, tr.is_profile_completed, tr.coords, tr.enquiry_radius, tr.created_at, tr.updated_at,
       jsonb_path_query_first(
         json_agg(
           json_build_object(
             'id', usr.id,
+            'tutor_id', tr.id,
             'mobile_number', usr.mobile_number,
             'fullname', usr.fullname,
             'email', usr.email,
             'profile_picture', tr.profile_picture,
             'experience', tr.experience,
-            'intro_video', tr.intro_video
+            'intro_video', tr.intro_video,
+            'is_demo_class', trcrs.is_demo_class,
+            'course_name', subcat.name
           )
         )::jsonb, '$[0]'
       ) as user,
@@ -259,6 +281,7 @@ const get = async (req, id) => {
     type: QueryTypes.SELECT,
     raw: true,
   });
+
   const count = await TutorModel.sequelize.query(countQuery, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
@@ -429,6 +452,7 @@ const update = async (req, id) => {
       is_profile_completed: req.body.is_profile_completed,
       curr_step: req.body.curr_step,
       coords: req.body.coords,
+      location: req.body.location,
 
       experience: req.body.experience,
       profile_picture: req.body.profile_picture,

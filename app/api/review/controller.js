@@ -43,6 +43,11 @@ const create = async (req, res) => {
   res.send({ status: true, message: "Review submitted." });
 };
 
+const get = async (req, res) => {
+  res.send({ status: true, data: await table.ReviewModel.get(req) });
+};
+
 export default {
   create: create,
+  get: get,
 };

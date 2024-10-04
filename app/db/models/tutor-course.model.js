@@ -43,6 +43,10 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      is_demo_class: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       createdAt: "created_at",
@@ -59,10 +63,12 @@ const create = async (req) => {
     course_id: req.body.course_id,
     fields: req.body.fields,
     boards: req.body.boards,
+    is_demo_class: req.body.is_demo_class,
   });
 };
 
 const getById = async (req, id) => {
+  console.log(req.params.id, id);
   return await TutorCourseModel.findOne({
     where: {
       id: req?.params?.id || id,
@@ -107,6 +113,7 @@ const update = async (req, id) => {
     {
       fields: req.body.fields,
       boards: req.body.boards,
+      is_demo_class: req.body.is_demo_class,
     },
     {
       where: {

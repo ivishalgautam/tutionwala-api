@@ -16,4 +16,5 @@ export default async function routes(fastify, options) {
 export async function publicRoutes(fastify, options) {
   fastify.get("/", {}, controller.get);
   fastify.get("/:slug", {}, controller.getBySlug);
+  fastify.get("/getByCategorySlug/:slug", {}, controller.getByCategorySlug);
 }
