@@ -76,7 +76,7 @@ const init = async (sequelize) => {
       },
       is_active: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
       },
       role: {
         type: DataTypes.ENUM({
