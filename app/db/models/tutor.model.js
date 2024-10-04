@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import { DataTypes, Deferrable, QueryTypes } from "sequelize";
+import { DataTypes, Deferrable, QueryTypes, where } from "sequelize";
 import { ErrorHandler } from "../../helpers/handleError.js";
 let TutorModel = null;
 
@@ -295,6 +295,26 @@ const get = async (req, id) => {
 
 const getFilteredTutors = async (req) => {
   console.log(req.body);
+  let queryParams = {};
+  let whereQuery = `WHERE tr.is_profile_completed = true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)`;
+  const lat = req.body.lat ? Number(req.body.lat) : null;
+  const lng = req.body.lng ? Number(req.body.lng) : null;
+  const address = req.body.location ? req.body.location : null;
+  if (address && lat && lng) {
+    whereQuery += `
+       AND ((
+        6371 * acos(
+          cos(radians(:lat)) * cos(radians(tr.coords[1])) * 
+          cos(radians(tr.coords[2]) - radians(:lng)) + 
+          sin(radians(:lat)) * sin(radians(tr.coords[1]))
+        )
+      ) <= tr.enquiry_radius OR tr.location = :address)
+    `;
+    queryParams.lat = lat;
+    queryParams.lng = lng;
+    queryParams.address = address;
+  }
+
   let query = `
   SELECT
       tr.id,
@@ -310,19 +330,20 @@ const getFilteredTutors = async (req) => {
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = tr.user_id
     LEFT JOIN ${constants.models.TUTOR_COURSE_TABLE} trcrs ON trcrs.tutor_id = tr.id
     LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.id = trcrs.course_id
-    WHERE tr.is_profile_completed = true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)
+    ${whereQuery}
     GROUP BY tr.id, usr.fullname
     ORDER BY tr.created_at DESC
   `;
+
   const data = await TutorModel.sequelize.query(query, {
     type: QueryTypes.SELECT,
+    replacements: { ...queryParams },
     raw: true,
   });
 
   const fieldOptions = req.body.fields ?? [];
   const boardOptions = req.body.boards ?? [];
   const languageOptions = req.body.languages ?? [];
-  const enqLocation = req.body.location;
   const filteredData = data.filter((item) => {
     const fields = item.fields[0];
     const boards = item.boards[0];
@@ -356,8 +377,7 @@ const getFilteredTutors = async (req) => {
             );
             return language;
           })
-        : true) &&
-      (enqLocation ? enqLocation === location : true)
+        : true)
     );
   });
 
@@ -370,6 +390,7 @@ const getById = async (req, id) => {
       tr.id,
       tr.user_id,
       tr.is_profile_completed,
+      tr.intro_video,
       tr.created_at,
       tr.updated_at,
       jsonb_path_query_first(
