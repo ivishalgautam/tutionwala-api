@@ -141,6 +141,9 @@ const createCustomer = async (req) => {
 
 const get = async () => {
   return await UserModel.findAll({
+    where: {
+      role: { [Op.notIn]: ["admin"] },
+    },
     order: [["created_at", "DESC"]],
     attributes: {
       exclude: ["password", "reset_password_token", "confirmation_token"],
