@@ -49,6 +49,10 @@ const otpSend = async (req, res) => {
     return ErrorHandler({ code: 404, message: "Customer not found!" });
   }
 
+  if (req.body.role && req.body.role !== record.role) {
+    return ErrorHandler({ code: 404, message: "User not found!" });
+  }
+
   // ! remove false
   if (false && !record.is_active)
     return res
@@ -90,12 +94,11 @@ const otpVerify = async (req, res) => {
   }
 
   const userData = await table.UserModel.getByMobile(req);
-
   if (!userData) {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
 
-  if (!userData.is_active) {
+  if (false && !userData.is_active) {
     return ErrorHandler({
       code: 400,
       message: "User not active. Please contact administrator!",
