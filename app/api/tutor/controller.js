@@ -119,6 +119,7 @@ const getCourses = async (req, res) => {
 };
 
 const getFilteredTutors = async (req, res) => {
+  console.log(req.body);
   let data = await table.TutorModel.getFilteredTutors(req);
   const total = data?.length ?? 0;
   const sliced = req.query.limit

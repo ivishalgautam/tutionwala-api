@@ -3,21 +3,33 @@ import fs from "fs";
 import pump from "pump";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import crypto from "crypto";
-
 import constants from "../lib/constants/index.js";
 import { ErrorHandler } from "./handleError.js";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { randomBytesGenerator } from "../lib/encryption/index.js";
 const { imageMime, videoMime, docsMime } = constants.mime;
 
-const randomBytesGenerator = (byte = 32) =>
-  crypto.randomBytes(byte).toString("hex");
+const bucketName = process.env.BUCKET_NAME;
+const bucketRegion = process.env.BUCKET_REGION;
+const accessKey = process.env.ACCESS_KEY;
+const secretAccessKey = process.env.SECRET_ACCESS_KEY;
+
+const s3 = new S3Client({
+  credentials: {
+    accessKeyId: accessKey,
+    secretAccessKey: secretAccessKey,
+  },
+  region: bucketRegion,
+});
 
 export const uploadFiles = async (req, isFileUpload = false) => {
   const path = [];
   const body = {};
   const parts = req.parts();
+  // console.log(await req.file());
 
   for await (const file of parts) {
+    // console.log(await file.toBuffer());
     if (file.type !== "file") {
       body[file.fieldname] = file.value;
       continue;
@@ -35,12 +47,22 @@ export const uploadFiles = async (req, isFileUpload = false) => {
       folder = "public/";
     }
 
-    const filename = file.filename.replace(/[\s'/]/g, "_").toLowerCase();
-    // const filename = randomBytesGenerator();
-    const filePath = `${folder}${Date.now()}_${filename}`;
+    // const filename = file.filename.replace(/[\s'/]/g, "_").toLowerCase();
+    const filename = randomBytesGenerator();
+    const key = `${folder}${Date.now()}_${filename}`;
+    // console.log("buffer", file.file._readableState.buffer);
+    const params = {
+      Bucket: bucketName,
+      Key: key,
+      Body: await file.toBuffer(),
+      ContentType: file.mimetype,
+    };
 
-    await fs.promises.mkdir(folder, { recursive: true });
-    path.push(await pump(file.file, fs.createWriteStream(filePath)).path);
+    const command = new PutObjectCommand(params);
+    await s3.send(command);
+
+    // await fs.promises.mkdir(folder, { recursive: true });
+    // path.push(await pump(file.file, fs.createWriteStream(filePath)).path);
   }
 
   return { path, body };
@@ -99,7 +121,7 @@ export const deleteFile = (filepath) => {
   const currentFilePath = fileURLToPath(import.meta.url);
   const currentDirPath = dirname(currentFilePath);
   const publicPath = path.join(currentDirPath, "../../", filepath);
-  console.log({ publicPath });
+  // console.log({ publicPath });
   if (fs.existsSync(publicPath)) {
     fs.unlinkSync(publicPath);
     return { status: true, message: "File deleted." };

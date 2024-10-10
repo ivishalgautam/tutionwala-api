@@ -36,6 +36,7 @@ const create = async (req, res) => {
 };
 
 const verify = async (req, res) => {
+  console.log(req.body);
   const record = await table.OtpModel.getByMobile(req);
 
   if (!record) {

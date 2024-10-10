@@ -11,6 +11,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.665.0",
+    "@aws-sdk/s3-request-presigner": "^3.668.0",
     "@fastify/cors": "^8.5.0",
     "@fastify/helmet": "^11.1.1",
     "@fastify/multipart": "^7.7.3",
