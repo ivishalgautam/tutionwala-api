@@ -47,22 +47,22 @@ export const uploadFiles = async (req, isFileUpload = false) => {
       folder = "public/";
     }
 
-    // const filename = file.filename.replace(/[\s'/]/g, "_").toLowerCase();
-    const filename = randomBytesGenerator();
+    const filename = file.filename.replace(/[\s'/]/g, "_").toLowerCase();
+    // const filename = randomBytesGenerator();
     const key = `${folder}${Date.now()}_${filename}`;
     // console.log("buffer", file.file._readableState.buffer);
-    const params = {
-      Bucket: bucketName,
-      Key: key,
-      Body: await file.toBuffer(),
-      ContentType: file.mimetype,
-    };
+    // const params = {
+    //   Bucket: bucketName,
+    //   Key: key,
+    //   Body: await file.toBuffer(),
+    //   ContentType: file.mimetype,
+    // };
 
-    const command = new PutObjectCommand(params);
-    await s3.send(command);
+    // const command = new PutObjectCommand(params);
+    // await s3.send(command);
 
-    // await fs.promises.mkdir(folder, { recursive: true });
-    // path.push(await pump(file.file, fs.createWriteStream(filePath)).path);
+    await fs.promises.mkdir(folder, { recursive: true });
+    path.push(await pump(file.file, fs.createWriteStream(key)).path);
   }
 
   return { path, body };
