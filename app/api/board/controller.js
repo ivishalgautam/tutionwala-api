@@ -60,6 +60,8 @@ const updateById = async (req, res) => {
     await table.SubjectModel.bulkDelete(subjectsToBeDeleted);
   }
 
+  // console.log({ subjectsToBeDeleted, newSubjects });
+
   const data = newSubjects.map((subject) => ({
     name: subject,
     board_id: req.params.id,

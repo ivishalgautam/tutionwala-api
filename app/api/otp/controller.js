@@ -10,6 +10,10 @@ import authToken from "../../helpers/auth.js";
 const { NOT_FOUND, BAD_REQUEST } = constants.http.status;
 
 const create = async (req, res) => {
+  const userExist = await table.UserModel.getByMobile(req);
+  if (userExist)
+    return ErrorHandler({ code: 400, message: "User exist with this number" });
+
   const otp = crypto.randomInt(100000, 999999);
   req.body.otp = otp;
   const record = await table.OtpModel.getByMobile(req);

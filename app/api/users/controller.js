@@ -5,14 +5,24 @@ import hash from "../../lib/encryption/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 
 const create = async (req, res) => {
-  const record = await table.UserModel.getByUsername(req);
+  console.log(req.body);
+  const userExist = await table.UserModel.getByMobile(req);
+  if (userExist)
+    return ErrorHandler({ code: 400, message: "User exist with this number" });
 
-  if (record) {
-    return ErrorHandler({
-      code: 409,
-      message:
-        "User already exists with username. Please try with different username",
-    });
+  const newUser = await table.UserModel.createCustomer(req);
+  if (!newUser) return ErrorHandler({ code: 500, message: "Error sign up!" });
+  req.body.user_id = newUser.id;
+
+  if (newUser.role === "tutor") {
+    const tutor = await table.TutorModel.create(req);
+    req.body.tutor_id = tutor.id;
+    req.body.course_id = req.body.sub_categories;
+    await table.TutorCourseModel.create(req);
+  }
+
+  if (newUser.role === "student") {
+    await table.StudentModel.create(req);
   }
 
   return res.send({ status: true, message: "User created" });

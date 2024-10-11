@@ -3,7 +3,7 @@ import userRoutes from "../../api/users/routes.js";
 import otpRoutes from "../../api/otp/routes.js";
 import categoryRoutes from "../../api/categories/routes.js";
 import subCategoryRoutes from "../../api/sub-categories/routes.js";
-import boardRoutes from "../../api/subject/routes.js";
+import boardRoutes from "../../api/board/routes.js";
 import tutorRoutes from "../../api/tutor/routes.js";
 import studentRoutes from "../../api/student/routes.js";
 import enquiryRoutes from "../../api/enquiry/routes.js";
