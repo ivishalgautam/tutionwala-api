@@ -15,7 +15,7 @@ const create = async (req, res) => {
   const subjects = req.body.subjects;
   if (subjects && subjects.length) {
     const data = subjects.map((subject) => ({
-      name: subject,
+      name: String(subject).toLowerCase(),
       board_id: board.id,
     }));
     await table.SubjectModel.bulkCreate(data);
@@ -52,7 +52,7 @@ const updateById = async (req, res) => {
   // Filter new subjects (subjects in the request but not in the DB)
   subjects.map((subject) => {
     if (!subjectRecord.some((rec) => rec.name === subject)) {
-      newSubjects.push(subject);
+      newSubjects.push(String(subject).toLowerCase());
     }
   });
 
