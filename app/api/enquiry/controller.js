@@ -18,6 +18,11 @@ const create = async (req, res) => {
     return ErrorHandler({ code: 400, message: "Tutor not found!" });
   }
 
+  const subCategory = await table.SubCategoryModel.getById(req);
+  if (!tutor) {
+    return ErrorHandler({ code: 400, message: "Tutor not found!" });
+  }
+
   const enquiry = await table.EnquiryModel.getByStudentAndTutor(
     tutor.id,
     student.id

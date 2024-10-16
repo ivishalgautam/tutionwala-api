@@ -43,6 +43,16 @@ const init = async (sequelize) => {
           isIn: [["converted", "pending"]],
         },
       },
+      sub_category_id: {
+        type: DataTypes.UUID,
+        onDelete: "CASCADE",
+        allowNull: false,
+        references: {
+          model: constants.models.SUB_CATEGORY_TABLE,
+          key: "id",
+        },
+        validate: { isUUID: 4 },
+      },
     },
     {
       createdAt: "created_at",

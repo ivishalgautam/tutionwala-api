@@ -125,6 +125,7 @@ const getByCategorySlug = async (req, res) => {
 
 const getById = async (req, res) => {
   const record = await table.SubCategoryModel.getById(req, req.params.id);
+  console.log({ record });
 
   if (!record) {
     return ErrorHandler({

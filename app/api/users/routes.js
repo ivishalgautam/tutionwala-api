@@ -1,11 +1,10 @@
 "use strict";
 
 import controller from "./controller.js";
-import jwtVerify from "../../helpers/auth.js";
 import { schema } from "./schema.js";
 
 export default async function routes(fastify, options) {
-  fastify.addHook("onRequest", jwtVerify.verifyToken);
+  // fastify.addHook("onRequest", jwtVerify.verifyToken);
   fastify.post(
     "/:id/change-password",
     { schema: schema.checkParam },
@@ -19,6 +18,8 @@ export default async function routes(fastify, options) {
   );
   fastify.get("/me", {}, controller.getUser);
   fastify.post("/", { schema: schema.create }, controller.create);
+  fastify.post("/tutor", { schema: schema.tutor }, controller.create);
+  fastify.post("/student", { schema: schema.student }, controller.create);
   fastify.get("/", {}, controller.get);
   fastify.get("/:id", { schema: schema.checkParam }, controller.getById);
   fastify.delete("/:id", { schema: schema.checkParam }, controller.deleteById);

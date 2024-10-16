@@ -300,6 +300,7 @@ const getFilteredTutors = async (req) => {
   const lat = req.body.lat ? Number(req.body.lat) : null;
   const lng = req.body.lng ? Number(req.body.lng) : null;
   const address = req.body.location ? req.body.location : null;
+  console.log({ lat, lng, address });
   if (address && lat && lng) {
     whereQuery += `
        AND ((

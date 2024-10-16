@@ -9,7 +9,7 @@ const updateById = async (req, res) => {
   console.log(req.body);
   const record = await table.StudentModel.getById(req);
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Student not found!" });
   }
   const currStep = req.body.curr_step;
   req.body.curr_step = currStep < 2 ? currStep + 1 : 2;
@@ -18,7 +18,7 @@ const updateById = async (req, res) => {
   }
   const updated = await table.StudentModel.update(req);
   if (!updated)
-    return ErrorHandler({ code: 500, message: "Error updating tutor!" });
+    return ErrorHandler({ code: 500, message: "Error updating student!" });
 
   res.send({ status: true, message: "Updated" });
 };

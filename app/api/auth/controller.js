@@ -97,6 +97,7 @@ const otpVerify = async (req, res) => {
   if (!userData) {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
+  console.log(userData.sub_categories[0]);
 
   if (false && !userData.is_active) {
     return ErrorHandler({

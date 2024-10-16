@@ -164,6 +164,7 @@ const getById = async (req, id) => {
         usr.mobile_number,
         usr.country_code,
         usr.is_verified,
+        usr.gender,
         ttr.profile_picture,
         json_agg(
           json_build_object(
@@ -247,7 +248,7 @@ const getByMobile = async (req, record = undefined) => {
       LEFT JOIN ${constants.models.TUTOR_TABLE} ttr ON ttr.user_id = usr.id AND usr.role = 'tutor'
       LEFT JOIN ${constants.models.TUTOR_COURSE_TABLE} ttrcrs ON ttrcrs.tutor_id = ttr.id
       LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.user_id = usr.id AND usr.role = 'student'
-      LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.id = ttrcrs.course_id
+      LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.id = ttrcrs.course_id OR subcat.id = ANY(stu.sub_categories)
       WHERE usr.mobile_number = '${req?.body?.mobile_number}'
       GROUP BY
           usr.id

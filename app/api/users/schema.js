@@ -24,6 +24,44 @@ export const schema = {
       ],
     },
   },
+  student: {
+    body: {
+      type: "object",
+      properties: {
+        fullname: { type: "string", minLength: 3 },
+        email: { type: "string", minLength: 3 },
+        mobile_number: { type: "string", minLength: 3 },
+        country_code: { type: "string", minLength: 1 },
+        role: { type: "string", enum: ["student"] },
+      },
+      required: ["fullname", "email", "mobile_number", "country_code", "role"],
+    },
+  },
+  tutor: {
+    body: {
+      type: "object",
+      properties: {
+        fullname: { type: "string", minLength: 3 },
+        email: { type: "string", minLength: 3 },
+        mobile_number: { type: "string", minLength: 3 },
+        country_code: { type: "string", minLength: 1 },
+        role: { type: "string", enum: ["tutor"] },
+        type: { type: "string", enum: ["individual", "institute"] },
+        institute_name: { type: "string" },
+        institute_contact_name: { type: "string" },
+        location: { type: "string", minLength: 3 },
+      },
+      required: [
+        "fullname",
+        "email",
+        "mobile_number",
+        "country_code",
+        "role",
+        "type",
+        "location",
+      ],
+    },
+  },
   checkParam: {
     type: "object",
     properties: {
