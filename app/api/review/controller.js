@@ -4,7 +4,7 @@ import table from "../../db/models.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 
 const create = async (req, res) => {
-  console.log("create review", req.body);
+  // console.log("create review", req.body);
   const tutor = await table.TutorModel.getById(0, req.body.tutor_id);
   if (!tutor) return ErrorHandler({ code: 404, message: "Tutor not exist!" });
 
@@ -23,9 +23,8 @@ const create = async (req, res) => {
   const isEnquiry20DaysOld = moment(enquiry.created_at)
     .add(20, "days")
     .isSameOrBefore(moment());
-
-  if (enquiry.status === "pending")
-    return ErrorHandler({ code: 400, message: "This enquiry is pending!" });
+  console.log(enquiry);
+  console.log(moment(enquiry.created_at).add(20, "days"));
 
   if (!isEnquiry20DaysOld)
     return ErrorHandler({ code: 400, message: "Enquiry must be 20 days old!" });

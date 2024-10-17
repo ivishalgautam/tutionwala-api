@@ -203,8 +203,8 @@ const get = async (req, id) => {
     queryParams.is_demo_class = isDemo;
   }
 
-  const limit = req.query.limit ? Number(req.query.limit) : 10;
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
   const offset = (page - 1) * limit;
   let whereClause = "";
   if (whereConditions) {

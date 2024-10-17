@@ -43,16 +43,6 @@ const init = async (sequelize) => {
           isIn: [["converted", "pending"]],
         },
       },
-      sub_category_id: {
-        type: DataTypes.UUID,
-        onDelete: "CASCADE",
-        allowNull: false,
-        references: {
-          model: constants.models.SUB_CATEGORY_TABLE,
-          key: "id",
-        },
-        validate: { isUUID: 4 },
-      },
     },
     {
       createdAt: "created_at",
@@ -136,11 +126,21 @@ const update = async (req, id) => {
 };
 
 const getById = async (req, id) => {
-  return await EnquiryModel.findOne({
-    where: {
-      id: req.params?.id || id,
-    },
+  let query = `
+    SELECT
+        enq.id,
+        enq.created_at,
+        enq.status
+       FROM ${constants.models.ENQUIRY_TABLE} enq
+       WHERE enq.id = '${req?.params?.id || id}'
+       GROUP BY
+          enq.id
+  `;
+
+  return await EnquiryModel.sequelize.query(query, {
+    type: QueryTypes.SELECT,
     raw: true,
+    plain: true,
   });
 };
 

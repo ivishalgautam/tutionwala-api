@@ -87,15 +87,19 @@ const get = async (req) => {
   const whereConditions = [];
   let queryParams = {};
 
-  const minRating = req.params.minRating;
+  const minRating = Number(req.query.minRating) ?? 4;
   if (minRating) {
     whereConditions.push(`rvw.rating >= :minRating`);
     queryParams.minRating = minRating;
   }
 
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+  const offset = (page - 1) * limit;
+
   let whereClause = "";
 
-  if (whereConditions.length > 1) {
+  if (whereConditions.length > 0) {
     whereClause = `WHERE ${whereConditions.join(" AND ")}`;
   }
 
@@ -106,7 +110,7 @@ const get = async (req) => {
       rvw.review,
       rvw.created_at,
       ttrusr.fullname as tutor_name,
-      ttrusr.profile_picture as tutor_profile,
+      ttr.profile_picture as tutor_profile,
       stuusr.fullname as student_name
     FROM ${constants.models.REVIEW_TABLE} rvw
     LEFT JOIN ${constants.models.TUTOR_TABLE} ttr ON ttr.id = rvw.tutor_id
@@ -114,8 +118,10 @@ const get = async (req) => {
     LEFT JOIN ${constants.models.USER_TABLE} ttrusr ON ttrusr.id = ttr.user_id 
     LEFT JOIN ${constants.models.USER_TABLE} stuusr ON stuusr.id = stu.user_id 
     ${whereClause}
+    LIMIT :limit OFFSET :offset
   `;
   return await ReviewModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
