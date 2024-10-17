@@ -137,7 +137,7 @@ const get = async (req, id) => {
   let whereConditions = ["tr.is_profile_completed = true"];
   const queryParams = {};
 
-  const category = req.query.category?.split(" ") ?? [];
+  const category = req.query.category ? req.query.category?.split(" ") : [];
   const language = req.query.language ? req.query.language?.split(" ") : [];
   const minAvgRating = req.query.rating
     ? req.query.rating.split(" ") ?? []
@@ -151,7 +151,6 @@ const get = async (req, id) => {
       ? true
       : false
     : null;
-
   if (category.length) {
     whereConditions.push(`subcat.slug = ANY(:category)`);
     queryParams.category = `{${category.join(",")}}`;
