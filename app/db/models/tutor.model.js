@@ -151,6 +151,7 @@ const get = async (req, id) => {
       ? true
       : false
     : null;
+  const mode = req.query.mode ? req.query.mode : null;
   if (category.length) {
     whereConditions.push(`subcat.slug = ANY(:category)`);
     queryParams.category = `{${category.join(",")}}`;
@@ -200,6 +201,11 @@ const get = async (req, id) => {
   if (isDemo) {
     whereConditions.push(`trcrs.is_demo_class = :is_demo_class`);
     queryParams.is_demo_class = isDemo;
+  }
+
+  if (mode) {
+    whereConditions.push(`ttr.class_conduct_mode = :mode`);
+    queryParams.mode = mode;
   }
 
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -293,13 +299,11 @@ const get = async (req, id) => {
 };
 
 const getFilteredTutors = async (req) => {
-  console.log(req.body);
   let queryParams = {};
   let whereQuery = `WHERE tr.is_profile_completed = true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)`;
   const lat = req.body.lat ? Number(req.body.lat) : null;
   const lng = req.body.lng ? Number(req.body.lng) : null;
   const address = req.body.location ? req.body.location : null;
-  console.log({ lat, lng, address });
   if (address && lat && lng) {
     whereQuery += `
        AND ((

@@ -54,6 +54,49 @@ export default (app) => {
   app.register(fastifyMultipart, {
     limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // Set the limit to 5 GB or adjust as needed
   });
+
+  app.get("/v1/course", (req, res) => {
+    const data = [
+      "Bachelor of Technology (B.Tech)",
+      "Bachelor of Engineering (B.E)",
+      "Master of Technology (M.Tech)",
+      "Master of Engineering (M.E)",
+      "Diploma in Engineering",
+      "Bachelor of Science (B.Sc)",
+      "Master of Science (M.Sc)",
+      "Bachelor of Computer Applications (BCA)",
+      "Master of Computer Applications (MCA)",
+      "Bachelor of Pharmacy (B.Pharm)",
+      "Bachelor of Arts (B.A)",
+      "Master of Arts (M.A)",
+      "Bachelor of Fine Arts (BFA)",
+      "Master of Fine Arts (MFA)",
+      "Bachelor of Social Work (BSW)",
+      "Master of Social Work (MSW)",
+      "Bachelor of Commerce (B.Com)",
+      "Master of Commerce (M.Com)",
+      "Bachelor of Business Administration (BBA)",
+      "Master of Business Administration (MBA)",
+      "Chartered Accountancy (CA)",
+      "Bachelor of Medicine, Bachelor of Surgery (MBBS)",
+      "Bachelor of Dental Surgery (BDS)",
+      "Bachelor of Ayurvedic Medicine and Surgery (BAMS)",
+      "Bachelor of Homeopathic Medicine and Surgery (BHMS)",
+      "Bachelor of Physiotherapy (BPT)",
+      "Bachelor of Laws (LLB)",
+      "Master of Laws (LLM)",
+      "Integrated BA LLB",
+      "Integrated BBA LLB",
+      "Bachelor of Architecture (B.Arch)",
+      "Master of Architecture (M.Arch)",
+      "Diploma in Architecture",
+      "Bachelor of Design (B.Des)",
+      "Master of Design (M.Des)",
+      "Bachelor of Fashion Design (B.FD)",
+      "Master of Fashion Design (M.FD)",
+    ].map((ele) => ({ value: ele, label: ele }));
+    res.send(data);
+  });
   // Increase the payload size limit
   app.register(routes, { prefix: "v1" });
   app.register(publicRoutes, { prefix: "v1" });

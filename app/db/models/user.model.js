@@ -29,22 +29,26 @@ const init = async (sequelize) => {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-          isEmail: true,
-        },
         unique: {
           args: true,
           msg: "Email address already in use!",
+        },
+        validate: {
+          isEmail: {
+            args: true,
+            msg: "The email you entered is invalid or is already in our system.",
+          },
         },
       },
       mobile_number: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: {
+          args: true,
+          msg: "Mobile number already in use!",
+        },
         validate: {
           notEmpty: true,
-        },
-        unique: {
-          msg: "Mobile number already in use!",
         },
       },
       country_code: {
@@ -86,7 +90,7 @@ const init = async (sequelize) => {
         validate: {
           isIn: {
             args: [["admin", "user", "tutor", "student"]],
-            msg: "Add different role",
+            msg: "Role Not Allowed!",
           },
         },
       },
