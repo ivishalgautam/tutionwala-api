@@ -61,8 +61,8 @@ const constants = {
     SALT_ROUNDS: 10,
   },
   time: {
-    TOKEN_EXPIRES_IN: 15 * 6000000, // 15 * 1 minute = 15 minutes
-    REFRESH_TOKEN_EXPIRES_IN: "1d", // 1 day
+    TOKEN_EXPIRES_IN: 1000 * 60 * 60 * 24 * 30, // 15 * 1 minute = 15 minutes
+    REFRESH_TOKEN_EXPIRES_IN: "30d", // 1 day
   },
   mime: {
     imageMime: ["jpeg", "jpg", "png", "gif", "webp"],
