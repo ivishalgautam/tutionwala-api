@@ -38,7 +38,7 @@ export default (app) => {
     });
   });
   app.addHook("preValidation", (request, reply, done) => {
-    console.log(req.body);
+    console.log(request.body);
     done();
   });
   app.register(fastifyRateLimit, {
