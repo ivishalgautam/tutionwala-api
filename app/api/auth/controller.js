@@ -59,7 +59,8 @@ const otpSend = async (req, res) => {
       .code(400)
       .send({ message: "Please contact administrator for login!" });
 
-  const otp = crypto.randomInt(100000, 999999);
+  const otp = 111111;
+  // const otp = crypto.randomInt(100000, 999999);
   console.log({ otp });
   req.body.email = record.email;
   req.body.mobile_number = record.mobile_number;

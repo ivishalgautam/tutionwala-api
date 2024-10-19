@@ -370,7 +370,6 @@ const getFilteredTutors = async (req) => {
       (boardOptions.length
         ? boardOptions.some(({ board_name, subjects }) => {
             if (!subjects.length) return true;
-
             const board = boards.find((b) => b?.board_name === board_name);
             return board && subjects.length
               ? subjects.some((subject) => board.subjects.includes(subject))
