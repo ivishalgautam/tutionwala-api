@@ -80,7 +80,9 @@ const get = async (req) => {
             'user_id', stuusr.id,
             'student_id', stu.id,
             'fullname', stuusr.fullname,
-            'profile_picture', stuusr.profile_picture
+            'profile_picture', stuusr.profile_picture,
+            'mobile_number', stuusr.mobile_number,
+            'email', stuusr.email
           )
         ) as student,
         json_agg(
