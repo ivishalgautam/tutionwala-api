@@ -56,6 +56,7 @@ const constants = {
     TUTOR_COURSE_TABLE: "tutor_courses",
     ENQUIRY_TABLE: "enquiries",
     FOLLOW_UP_TABLE: "follow_ups",
+    QUERY_TABLE: "queries",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

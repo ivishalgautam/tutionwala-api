@@ -12,6 +12,7 @@ import studentModel from "./models/student.model.js";
 import followupModel from "./models/followup.model.js";
 import tutorCourseModel from "./models/tutor-course.model.js";
 import reviewModel from "./models/review.model.js";
+import queryModel from "./models/query.model.js";
 
 export default {
   UserModel: userModel,
@@ -27,4 +28,5 @@ export default {
   FollowupModel: followupModel,
   TutorCourseModel: tutorCourseModel,
   ReviewModel: reviewModel,
+  QueryModel: queryModel,
 };
