@@ -105,6 +105,16 @@ const get = async (req) => {
     whereClause = "WHERE " + whereConditions.join(" AND ");
   }
 
+  let countQuery = `
+  SELECT
+      COUNT(sbcat.id) OVER()::integer as total
+    FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
+    LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
+    ${whereClause}
+    GROUP BY sbcat.id
+    LIMIT :limit OFFSET :offset
+  `;
+
   let query = `
   SELECT
       sbcat.id,
@@ -121,11 +131,20 @@ const get = async (req) => {
     LIMIT :limit OFFSET :offset
   `;
 
-  return await SubCategoryModel.sequelize.query(query, {
+  const data = await SubCategoryModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });
+  const count = await SubCategoryModel.sequelize.query(countQuery, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
+  });
+
+  let total = count?.[0]?.total;
+
+  return { data, total };
 };
 
 const update = async (req, id) => {
