@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { QueryTypes } from "sequelize";
+import sequelizeFwk, { QueryTypes, where } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let BoardModel = null;
@@ -46,18 +46,39 @@ const create = async (req) => {
 };
 
 const get = async (req) => {
+  let whereConditions = [];
+  const queryParams = {};
+  let q = req.query.q;
+  if (q) {
+    whereConditions.push(`brd.name ILIKE :query`);
+    queryParams.query = `%${q}%`;
+  }
+
+  let whereClause = "";
+  if (whereConditions.length > 0) {
+    whereClause = "WHERE " + whereConditions.join(" AND ");
+  }
+
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+  const offset = (page - 1) * limit;
+
   let query = `
   SELECT
       brd.*,
-      COUNT(sbj.id) as total_subjects
+      COUNT(sbj.id) as total_subjects,
+      COUNT(brd.id) OVER()::integer as total
     FROM ${constants.models.BOARD_TABLE} brd
     LEFT JOIN ${constants.models.SUBJECT_TABLE} sbj ON sbj.board_id = brd.id
+    ${whereClause}
     GROUP BY
       brd.id
     ORDER BY brd.created_at DESC
+    LIMIT :limit OFFSET :offset
   `;
 
   return await BoardModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
     type: QueryTypes.SELECT,
     raw: true,
   });

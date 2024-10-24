@@ -70,7 +70,9 @@ const deleteById = async (req, res) => {
 };
 
 const get = async (req, res) => {
-  return res.send({ status: true, data: await table.UserModel.get() });
+  const data = await table.UserModel.get(req);
+
+  return res.send({ status: true, data: data, total: data?.[0]?.total });
 };
 
 const getById = async (req, res) => {

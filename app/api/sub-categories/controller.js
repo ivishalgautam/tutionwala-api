@@ -125,7 +125,6 @@ const getByCategorySlug = async (req, res) => {
 
 const getById = async (req, res) => {
   const record = await table.SubCategoryModel.getById(req, req.params.id);
-  console.log({ record });
 
   if (!record) {
     return ErrorHandler({
@@ -138,8 +137,8 @@ const getById = async (req, res) => {
 };
 
 const get = async (req, res) => {
-  const { data, total } = await table.SubCategoryModel.get(req);
-  res.send({ status: true, data, total });
+  const data = await table.SubCategoryModel.get(req);
+  res.send({ status: true, data, total: data?.[0]?.total });
 };
 
 const deleteById = async (req, res) => {

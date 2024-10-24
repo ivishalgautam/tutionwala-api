@@ -1,61 +1,37 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
 import table from "../../db/models.js";
+import { ErrorHandler } from "../../helpers/handleError.js";
 
-const { INTERNAL_SERVER_ERROR, NOT_FOUND } = constants.http.status;
+const { NOT_FOUND } = constants.http.status;
 
 const create = async (req, res) => {
-  try {
-    await table.QueryModel.create(req);
-    res.send({ status: true, message: "Query sent." });
-  } catch (error) {
-    console.error(error);
-    res.code(INTERNAL_SERVER_ERROR).send({ status: false, error });
-  }
+  await table.QueryModel.create(req);
+  res.send({ status: true, message: "Query sent." });
 };
 
 const getById = async (req, res) => {
-  try {
-    const record = await table.QueryModel.getById(req, req.params.id);
+  const record = await table.QueryModel.getById(req, req.params.id);
 
-    if (!record) {
-      return res
-        .code(NOT_FOUND)
-        .send({ status: false, message: "Query not found!" });
-    }
+  if (!record)
+    return ErrorHandler({ status: NOT_FOUND, message: "Query not found!" });
 
-    res.send({ status: true, data: record });
-  } catch (error) {
-    console.error(error);
-    res.code(INTERNAL_SERVER_ERROR).send({ status: false, error });
-  }
+  res.send({ status: true, data: record });
 };
 
 const get = async (req, res) => {
-  try {
-    const queries = await table.QueryModel.get(req);
-    res.send({ status: true, data: queries });
-  } catch (error) {
-    console.error(error);
-    res.code(INTERNAL_SERVER_ERROR).send({ status: false, error });
-  }
+  const data = await table.QueryModel.get(req);
+  res.send({ status: true, data, total: data?.[0]?.total });
 };
 
 const deleteById = async (req, res) => {
-  try {
-    const record = await table.QueryModel.getById(req, req.params.id);
+  const record = await table.QueryModel.getById(req, req.params.id);
 
-    if (!record)
-      return res
-        .code(NOT_FOUND)
-        .send({ status: false, message: "Query not found!" });
+  if (!record)
+    return ErrorHandler({ status: NOT_FOUND, message: "Query not found!" });
 
-    await table.QueryModel.deleteById(req, req.params.id);
-    res.send({ status: true, message: "Query deleted." });
-  } catch (error) {
-    console.error(error);
-    res.code(INTERNAL_SERVER_ERROR).send({ status: false, error });
-  }
+  await table.QueryModel.deleteById(req, req.params.id);
+  res.send({ status: true, message: "Query deleted." });
 };
 
 export default {

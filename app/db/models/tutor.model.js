@@ -152,6 +152,7 @@ const get = async (req, id) => {
       : false
     : null;
   const mode = req.query.mode ? req.query.mode : null;
+
   if (category.length) {
     whereConditions.push(`subcat.slug = ANY(:category)`);
     queryParams.category = `{${category.join(",")}}`;

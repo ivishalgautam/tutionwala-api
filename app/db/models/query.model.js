@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk from "sequelize";
+import sequelizeFwk, { QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let UserQueryModel = null;
@@ -62,8 +62,39 @@ const create = async (req) => {
 };
 
 const get = async (req) => {
-  return await UserQueryModel.findAll({
-    order: [["created_at", "DESC"]],
+  const whereConditions = [];
+  const queryParams = {};
+  const q = req.query.q ? req.query.q : null;
+
+  if (q) {
+    whereConditions.push(
+      `qr.name ILIKE :query OR qr.email ILIKE :query OR qr.phone ILIKE :query`
+    );
+    queryParams.query = `%${q}%`;
+  }
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const offset = (page - 1) * limit;
+
+  let whereClause = "";
+  if (whereConditions.length) {
+    whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+  }
+
+  const query = `
+  SELECT
+      qr.*,
+      COUNT(qr.id) OVER()::integer as total
+    FROM ${constants.models.QUERY_TABLE} qr
+    ${whereClause}
+    ORDER BY qr.created_at DESC
+    LIMIT :limit OFFSET :offset
+  `;
+
+  return await UserQueryModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
   });
 };
 

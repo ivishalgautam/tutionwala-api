@@ -81,7 +81,8 @@ const getById = async (req, res) => {
 };
 
 const get = async (req, res) => {
-  res.send({ status: true, data: await table.BoardModel.get(req) });
+  const data = await table.BoardModel.get(req);
+  res.send({ status: true, data, total: data?.[0]?.total });
 };
 
 const deleteById = async (req, res) => {

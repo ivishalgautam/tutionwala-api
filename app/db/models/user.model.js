@@ -143,15 +143,39 @@ const createCustomer = async (req) => {
   return data.dataValues;
 };
 
-const get = async () => {
-  return await UserModel.findAll({
-    where: {
-      role: { [Op.notIn]: ["admin"] },
-    },
-    order: [["created_at", "DESC"]],
-    attributes: {
-      exclude: ["password", "reset_password_token", "confirmation_token"],
-    },
+const get = async (req) => {
+  const whereConditions = ["usr.role != 'admin'"];
+  const queryParams = {};
+  const q = req.query.q ? req.query.q : null;
+
+  if (q) {
+    whereConditions.push(
+      `(usr.fullname ILIKE :query OR usr.email ILIKE :query)`
+    );
+    queryParams.query = `%${q}%`;
+  }
+
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const offset = (page - 1) * limit;
+
+  let whereClause = "";
+  if (whereConditions.length) {
+    whereClause = `WHERE ${whereConditions.join(" AND ")}`;
+  }
+
+  const query = `
+  SELECT 
+    usr.*
+  FROM ${constants.models.USER_TABLE} usr
+  ${whereClause}
+  LIMIT :limit OFFSET :offset
+  `;
+
+  return await UserModel.sequelize.query(query, {
+    replacements: { ...queryParams, limit, offset },
+    type: QueryTypes.SELECT,
+    raw: true,
   });
 };
 
