@@ -59,8 +59,8 @@ const get = async (req) => {
     whereClause = "WHERE " + whereConditions.join(" AND ");
   }
 
-  const limit = req.query.limit ? Number(req.query.limit) : 10;
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
 
   let query = `

@@ -81,22 +81,26 @@ const get = async (req) => {
   let whereConditions = [];
   const queryParams = {};
   let q = req.query.q;
+  const featured = req.query.featured;
+  const isBoards = req.query.isBoards;
+  const category = req.query.categories ? req.query.categories?.split(".") : [];
+
   if (q) {
     whereConditions.push(`sbcat.name ILIKE :query OR cat.name ILIKE :query`);
     queryParams.query = `%${q}%`;
   }
-
-  const featured = req.query.featured;
-  const isBoards = req.query.isBoards;
-
   if (featured) {
     whereConditions.push(`sbcat.is_featured = true`);
   }
   if (isBoards) {
     whereConditions.push(`sbcat.is_boards = true`);
   }
+  if (category.length) {
+    whereConditions.push(`cat.slug = ANY(:category)`);
+    queryParams.category = `{${category.join(",")}}`;
+  }
 
-  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
   const offset = (page - 1) * limit;
 

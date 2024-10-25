@@ -147,6 +147,7 @@ const get = async (req) => {
   const whereConditions = ["usr.role != 'admin'"];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
+  const roles = req.query.role ? req.query.role.split(".") : null;
 
   if (q) {
     whereConditions.push(
@@ -155,8 +156,13 @@ const get = async (req) => {
     queryParams.query = `%${q}%`;
   }
 
+  if (roles?.length) {
+    whereConditions.push(`usr.role = any(:roles)`);
+    queryParams.roles = `{${roles.join(",")}}`;
+  }
+
   const page = req.query.page ? Number(req.query.page) : 1;
-  const limit = req.query.limit ? Number(req.query.limit) : 10;
+  const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
 
   let whereClause = "";
@@ -166,7 +172,8 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-    usr.*
+    usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, usr.is_active, usr.is_verified, usr.created_at,
+    COUNT(usr.id) OVER()::integer as total
   FROM ${constants.models.USER_TABLE} usr
   ${whereClause}
   LIMIT :limit OFFSET :offset
