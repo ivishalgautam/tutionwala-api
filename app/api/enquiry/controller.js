@@ -50,7 +50,7 @@ const update = async (req, res) => {
     return ErrorHandler({ code: 404, message: "Enquiry not found!" });
 
   await table.EnquiryModel.update(req);
-  res.send({ status: true, message: "Enquiry deleted." });
+  res.send({ status: true, message: "Enquiry updated." });
 };
 
 const deleteById = async (req, res) => {

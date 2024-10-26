@@ -358,7 +358,7 @@ const countUser = async (last_30_days = false) => {
   let where_query;
   if (last_30_days) {
     where_query = {
-      createdAt: {
+      created_at: {
         [Op.gte]: moment()
           .subtract(30, "days")
           .format("YYYY-MM-DD HH:mm:ss.SSSZ"),

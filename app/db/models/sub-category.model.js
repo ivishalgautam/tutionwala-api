@@ -1,6 +1,7 @@
 "use strict";
+import moment from "moment";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { Deferrable, QueryTypes } from "sequelize";
+import sequelizeFwk, { Deferrable, Op, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let SubCategoryModel = null;
@@ -330,6 +331,24 @@ const getByCategorySlug = async (req, slug) => {
   return { courses: data, total };
 };
 
+const countSubCategory = async (last_30_days = false) => {
+  let where_query;
+  if (last_30_days) {
+    where_query = {
+      created_at: {
+        [Op.gte]: moment()
+          .subtract(30, "days")
+          .format("YYYY-MM-DD HH:mm:ss.SSSZ"),
+      },
+    };
+  }
+
+  return await SubCategoryModel.count({
+    where: where_query,
+    raw: true,
+  });
+};
+
 export default {
   init: init,
   create: create,
@@ -340,4 +359,5 @@ export default {
   deleteById: deleteById,
   countCategories: countCategories,
   getByCategorySlug: getByCategorySlug,
+  countSubCategory: countSubCategory,
 };
