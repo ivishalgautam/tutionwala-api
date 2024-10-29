@@ -85,7 +85,6 @@ const deleteById = async (req, res) => {
     return ErrorHandler({ code: NOT_FOUND, message: "Category not found!" });
 
   const resp = deleteFile(record?.image);
-  console.log({ resp });
   if (resp.status) {
     await table.CategoryModel.deleteById(req, req.params.id);
   } else {

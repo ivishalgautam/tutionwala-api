@@ -90,12 +90,12 @@ const get = async (req) => {
             'user_id', tutusr.id,
             'tutor_id', tut.id,
             'fullname', tutusr.fullname,
-            'profile_picture', tutusr.profile_picture
+            'profile_picture', tut.profile_picture
           )
         ) as tutor
        FROM ${constants.models.ENQUIRY_TABLE} enq
        LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = enq.tutor_id 
-       LEFT JOIN ${constants.models.USER_TABLE} tutusr ON tut.user_id = tutusr.id 
+       LEFT JOIN ${constants.models.USER_TABLE} tutusr ON tutusr.id = tut.user_id 
        LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = enq.student_id 
        LEFT JOIN ${constants.models.USER_TABLE} stuusr ON stuusr.id = stu.user_id 
        ${whereQuery}
