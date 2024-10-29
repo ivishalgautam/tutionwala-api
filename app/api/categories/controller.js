@@ -4,6 +4,7 @@ import table from "../../db/models.js";
 import slugify from "slugify";
 import fileController from "../upload_files/controller.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
+import { deleteFile } from "../../helpers/file.js";
 
 const { BAD_REQUEST, NOT_FOUND } = constants.http.status;
 
@@ -83,9 +84,16 @@ const deleteById = async (req, res) => {
   if (!record)
     return ErrorHandler({ code: NOT_FOUND, message: "Category not found!" });
 
-  await table.CategoryModel.deleteById(req, req.params.id);
-  req.query.file_path = record?.image;
-  fileController.deleteFile(req, res);
+  const resp = deleteFile(record?.image);
+  console.log({ resp });
+  if (resp.status) {
+    await table.CategoryModel.deleteById(req, req.params.id);
+  } else {
+    return ErrorHandler({
+      code: 500,
+      message: "Error deleting category image.",
+    });
+  }
 
   res.send({ status: true, message: "Category deleted." });
 };

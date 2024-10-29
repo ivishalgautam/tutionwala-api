@@ -131,6 +131,7 @@ const getUser = async (req, res) => {
     return ErrorHandler({ code: 401, messaege: "invalid token" });
   }
 
+  delete req.user_data.password;
   return res.send(req.user_data);
 };
 
