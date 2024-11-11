@@ -123,7 +123,7 @@ const get = async (req) => {
     FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
     LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
     ${whereClause}
-    ORDER BY sbcat.created_at DESC
+    ORDER BY sbcat.name ASC
     LIMIT :limit OFFSET :offset
   `;
 

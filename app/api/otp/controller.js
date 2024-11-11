@@ -30,6 +30,7 @@ const create = async (req, res) => {
       otp: otp,
     }));
 
+  // ! change true and check resp
   if (true) {
     if (record) {
       await table.OtpModel.update(req);
