@@ -127,10 +127,12 @@ const getCourses = async (req) => {
     WHERE tr.user_id = '${req.user_data.id}' 
   `;
 
-  return await TutorModel.sequelize.query(query, {
+  const data = await TutorModel.sequelize.query(query, {
     type: QueryTypes.SELECT,
     raw: true,
   });
+
+  return data.filter((d) => Boolean(d.id));
 };
 
 const get = async (req, id) => {
