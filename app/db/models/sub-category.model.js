@@ -296,7 +296,7 @@ const getByCategorySlug = async (req, slug) => {
   LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
   ${whereClause}
   ORDER BY 
-    CAST(REGEXP_REPLACE(sbcat.name, '[^0-9]', '', 'g') AS INTEGER),
+    CAST(NULLIF(REGEXP_REPLACE(sbcat.name, '[^0-9]', '', 'g'), '') AS INTEGER),
     sbcat.name
   LIMIT :limit OFFSET :offset
 `;
