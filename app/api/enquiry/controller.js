@@ -1,6 +1,7 @@
 "use strict";
 import table from "../../db/models.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
+import { haversine } from "../../helpers/haversine.js";
 
 const create = async (req, res) => {
   const user = await table.UserModel.getById(0, req.user_data.id);
@@ -17,6 +18,19 @@ const create = async (req, res) => {
   if (!tutor) {
     return ErrorHandler({ code: 400, message: "Tutor not found!" });
   }
+  const distance =
+    haversine(
+      student.coords[0],
+      student.coords[1],
+      tutor.coords[0],
+      tutor.coords[1]
+    ) / 1000;
+
+  if (distance > tutor.enquiry_radius)
+    return ErrorHandler({
+      code: 400,
+      message: "Sorry, You are not in allowed radius of this tutor!",
+    });
 
   const subCategory = await table.SubCategoryModel.getById(req);
   if (!tutor) {
@@ -28,8 +42,7 @@ const create = async (req, res) => {
     student.id
   );
 
-  // ! remove false
-  if (false && enquiry) {
+  if (enquiry) {
     return ErrorHandler({ code: 400, message: "Already enquired!" });
   }
 

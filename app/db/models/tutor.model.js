@@ -402,6 +402,8 @@ const getById = async (req, id) => {
       tr.intro_video,
       tr.created_at,
       tr.updated_at,
+      tr.coords,
+      tr.enquiry_radius,
       jsonb_path_query_first(
         json_agg(
           json_build_object(
