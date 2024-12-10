@@ -14,6 +14,9 @@ import reportRoutes from "../../api/dashboard/routes.js";
 
 export default async function routes(fastify, options) {
   fastify.addHook("onRequest", jwtVerify.verifyToken);
+  fastify.addHook("preHandler", async (request, reply) => {
+    request.body && console.log("body", request.body);
+  });
   fastify.register(userRoutes, { prefix: "users" });
   fastify.register(otpRoutes, { prefix: "otp" });
   fastify.register(categoryRoutes, { prefix: "categories" });

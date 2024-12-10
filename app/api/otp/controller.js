@@ -24,7 +24,6 @@ const create = async (req, res) => {
     fullname: req.body?.fullname,
     otp,
   });
-  console.log({ resp });
   // ! change true and check resp
   if (resp.statusText === "OK") {
     if (record) {
