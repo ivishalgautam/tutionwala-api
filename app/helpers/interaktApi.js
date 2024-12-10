@@ -1,34 +1,15 @@
 import axios from "axios";
+import config from "../config/index.js";
 
-export async function sendOtp({
-  country_code,
-  mobile_number,
-  first_name,
-  last_name,
-  otp,
-}) {
-  let config = {
-    method: "post",
+export async function sendOtp({ country_code, mobile_number, fullname, otp }) {
+  let configObj = {
+    method: "get",
     maxBodyLength: Infinity,
-    url: "https://api.interakt.ai/v1/public/message/",
-    headers: {
-      Authorization: `Basic ${process.env.INTERACT_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    data: JSON.stringify({
-      countryCode: country_code,
-      phoneNumber: mobile_number,
-      callbackuserData: "Otp sent successfully.",
-      type: "Template",
-      template: {
-        name: process.env.INTERACT_TEMPLATE_NAME,
-        languageCode: "en",
-        bodyValues: [`${first_name} ${last_name}`, otp],
-      },
-    }),
+    url: `https://app.wafly.in/api/sendtemplate.php?LicenseNumber=${config.waffly_license_no}&APIKey=${config.waffly_api_key}&Contact=${country_code}${mobile_number}&Template=${config.waffly_template_name}&Param=${fullname},${otp}`,
+    headers: {},
   };
 
-  const resp = await axios(config);
-  console.log(resp.data);
+  const resp = await axios(configObj);
+  console.log({ waffly_resp: JSON.stringify(resp.data) });
   return resp;
 }

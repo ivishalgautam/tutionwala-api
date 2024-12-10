@@ -22,6 +22,10 @@ const config = {
   smtp_port: parseInt(process.env.SMTP_PORT) || 465,
   smtp_host: process.env.SMTP_SERVER || "smtp.gmail.com",
   smtp_password: process.env.SMTP_PASSWORD,
+
+  waffly_template_name: process.env.WAFFLY_TEMPLATE_NAME,
+  waffly_api_key: process.env.WAFFLY_API_KEY,
+  waffly_license_no: process.env.WAFFLY_LICENSE_NO,
 };
 
 export default config;

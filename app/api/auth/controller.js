@@ -48,7 +48,7 @@ const otpSend = async (req, res) => {
   if (!record) {
     return ErrorHandler({ code: 404, message: "Customer not found!" });
   }
-
+  console.log({ record });
   if (req.body.role && req.body.role !== record.role) {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
@@ -59,15 +59,25 @@ const otpSend = async (req, res) => {
       .code(400)
       .send({ message: "Please contact administrator for login!" });
 
-  const otp = 111111;
-  // const otp = crypto.randomInt(100000, 999999);
+  const otp = crypto.randomInt(100000, 999999);
   console.log({ otp });
   req.body.email = record.email;
   req.body.mobile_number = record.mobile_number;
   req.body.country_code = record.country_code;
   req.body.otp = otp;
+
+  let otpRecord = null;
   if (record) {
-    await table.OtpModel.create(req);
+    otpRecord = await table.OtpModel.create(req);
+  }
+
+  if (otpRecord) {
+    const resp = await sendOtp({
+      country_code: record?.country_code,
+      mobile_number: record?.mobile_number,
+      fullname: record?.fullname,
+      otp,
+    });
   }
 
   return res.send({ status: true, message: "Otp sent.", otp });
@@ -98,7 +108,6 @@ const otpVerify = async (req, res) => {
   if (!userData) {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
-  console.log(userData.sub_categories[0]);
 
   if (false && !userData.is_active) {
     return ErrorHandler({
@@ -145,16 +154,16 @@ const createNewUser = async (req, res) => {
   const data = await table.UserModel.create(req);
   userData = await table.UserModel.getById(0, data.id);
 
-  // const resp = await sendOtp({
-  //   country_code: userData?.country_code,
-  //   mobile_number: userData?.mobile_number,
-  //   first_name: userData?.first_name,
-  //   last_name: userData?.last_name,
-  //   otp,
-  // });
+  const resp = await sendOtp({
+    country_code: userData?.country_code,
+    mobile_number: userData?.mobile_number,
+    first_name: userData?.first_name,
+    last_name: userData?.last_name,
+    otp,
+  });
 
   // if (resp.data.result) {
-  if (false) {
+  if (resp.data.result) {
     await table.OtpModel.create(req);
   }
 
