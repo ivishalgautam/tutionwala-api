@@ -34,7 +34,7 @@ const create = async (req, res) => {
     }
   }
 
-  res.send({ status: true, message: "Otp sent", otp });
+  res.send({ status: true, message: "Otp sent" });
 };
 
 const verify = async (req, res) => {

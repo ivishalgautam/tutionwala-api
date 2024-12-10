@@ -80,7 +80,7 @@ const otpSend = async (req, res) => {
     });
   }
 
-  return res.send({ status: true, message: "Otp sent.", otp });
+  return res.send({ status: true, message: "Otp sent." });
 };
 
 const otpVerify = async (req, res) => {
