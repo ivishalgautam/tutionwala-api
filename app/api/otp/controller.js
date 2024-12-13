@@ -43,9 +43,13 @@ const verify = async (req, res) => {
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Resend OTP!" });
   }
+
+  console.log({ record });
+
   const isExpired = moment(record.created_at)
     .add(5, "minutes")
     .isBefore(moment());
+
   if (isExpired) {
     await table.OtpModel.deleteByMobile(req);
     return ErrorHandler({ code: BAD_REQUEST, message: "Please resend OTP!" });
