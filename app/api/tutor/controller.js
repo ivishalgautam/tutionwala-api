@@ -34,7 +34,6 @@ const createCourse = async (req, res) => {
 };
 
 const updateById = async (req, res) => {
-  console.log(req.body);
   const record = await table.TutorModel.getById(req);
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });

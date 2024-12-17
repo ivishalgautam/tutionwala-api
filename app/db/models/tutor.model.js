@@ -353,6 +353,29 @@ const getFilteredTutors = async (req) => {
   const lat = req.body.lat ? Number(req.body.lat) : null;
   const lng = req.body.lng ? Number(req.body.lng) : null;
   const address = req.body.location ? req.body.location : null;
+  const preference = req.body.preference ? req.body.preference : null;
+  const availability = req.body.availability ? req.body.availability : null;
+  const startDate = req.body.start_date ? req.body.start_date : null;
+
+  // (preferenceOpt ? preferenceOpt === preference : true) &&
+  // (availabilityOpt ? availabilityOpt === availability : true) &&
+  // (startDateOpt ? startDateOpt === start_date : true)
+
+  if (preference) {
+    whereQuery += ` AND tr.preference = :preference`;
+    queryParams.preference = preference;
+  }
+
+  if (availability) {
+    whereQuery += ` AND tr.availability = :availability`;
+    queryParams.availability = availability;
+  }
+
+  if (startDate) {
+    whereQuery += ` AND tr.start_date = :startDate`;
+    queryParams.startDate = startDate;
+  }
+
   if (address && lat && lng) {
     whereQuery += `
        AND ((
@@ -399,17 +422,11 @@ const getFilteredTutors = async (req) => {
   const fieldOptions = req.body.fields ?? [];
   const boardOptions = req.body.boards ?? [];
   const languageOptions = req.body.languages ?? [];
-  const preferenceOpt = req.body.preference ? req.body.preference : null;
-  const availabilityOpt = req.body.availability ? req.body.availability : null;
-  const startDateOpt = req.body.start_date ? req.body.start_date : null;
+
   const filteredData = data.filter((item) => {
-    const location = item.location;
     const fields = item.fields[0];
     const boards = item.boards[0];
     const languages = item.languages;
-    const preference = item.preference;
-    const availability = item.availability;
-    const start_date = item.start_date;
 
     return (
       (fieldOptions.length
@@ -441,10 +458,7 @@ const getFilteredTutors = async (req) => {
             );
             return language;
           })
-        : true) &&
-      (preferenceOpt ? preferenceOpt === preference : true) &&
-      (availabilityOpt ? availabilityOpt === availability : true) &&
-      (startDateOpt ? startDateOpt === start_date : true)
+        : true)
     );
   });
 
