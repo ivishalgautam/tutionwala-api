@@ -89,6 +89,49 @@ const init = async (sequelize) => {
           isIn: [["offline", "online", "nearby", "any"]],
         },
       },
+      preference: {
+        type: DataTypes.ENUM({
+          values: [
+            "one on one/private tutions",
+            "no preference",
+            "group classes",
+          ],
+        }),
+        defaultValue: "no preference",
+        validate: {
+          isIn: [
+            ["one on one/private tutions", "no preference", "group classes"],
+          ],
+        },
+      },
+      availability: {
+        type: DataTypes.ENUM({
+          values: ["anyday", "weekday", "weekend"],
+        }),
+        defaultValue: "anyday",
+        validate: {
+          isIn: [["anyday", "weekday", "weekend"]],
+        },
+      },
+      start_date: {
+        type: DataTypes.ENUM({
+          values: [
+            "immediately",
+            "not sure, just want to look at options",
+            "within a month",
+          ],
+        }),
+        defaultValue: "immediately",
+        validate: {
+          isIn: [
+            [
+              "immediately",
+              "not sure, just want to look at options",
+              "within a month",
+            ],
+          ],
+        },
+      },
     },
     {
       createdAt: "created_at",
@@ -108,6 +151,9 @@ const create = async (req) => {
     enquiry_radius: req.body.enquiry_radius,
     class_conduct_mode: req.body.class_conduct_mode,
     degree: req.body.degree,
+    preference: req.body.preference,
+    availability: req.body.availability,
+    start_date: req.body.start_date,
   });
 
   return tutor.dataValues;
@@ -330,6 +376,9 @@ const getFilteredTutors = async (req) => {
       tr.location,
       tr.experience,
       tr.created_at,
+      tr.preference,
+      tr.availability,
+      tr.start_date,
       usr.fullname,
       COALESCE(JSON_AGG(trcrs.fields) FILTER (WHERE trcrs IS NOT NULL), '[]') AS fields,
       COALESCE(JSON_AGG(trcrs.boards) FILTER (WHERE trcrs IS NOT NULL), '[]') AS boards
@@ -347,15 +396,21 @@ const getFilteredTutors = async (req) => {
     replacements: { ...queryParams },
     raw: true,
   });
-
   const fieldOptions = req.body.fields ?? [];
   const boardOptions = req.body.boards ?? [];
   const languageOptions = req.body.languages ?? [];
+  const preferenceOpt = req.body.preference ? req.body.preference : null;
+  const availabilityOpt = req.body.availability ? req.body.availability : null;
+  const startDateOpt = req.body.start_date ? req.body.start_date : null;
   const filteredData = data.filter((item) => {
+    const location = item.location;
     const fields = item.fields[0];
     const boards = item.boards[0];
     const languages = item.languages;
-    const location = item.location;
+    const preference = item.preference;
+    const availability = item.availability;
+    const start_date = item.start_date;
+
     return (
       (fieldOptions.length
         ? fieldOptions.every(({ fieldName, options }) => {
@@ -386,7 +441,10 @@ const getFilteredTutors = async (req) => {
             );
             return language;
           })
-        : true)
+        : true) &&
+      (preferenceOpt ? preferenceOpt === preference : true) &&
+      (availabilityOpt ? availabilityOpt === availability : true) &&
+      (startDateOpt ? startDateOpt === start_date : true)
     );
   });
 
@@ -485,6 +543,9 @@ const update = async (req, id) => {
       curr_step: req.body.curr_step,
       coords: req.body.coords,
       location: req.body.location,
+      preference: req.body.preference,
+      availability: req.body.availability,
+      start_date: req.body.start_date,
 
       experience: req.body.experience,
       profile_picture: req.body.profile_picture,
