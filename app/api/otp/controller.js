@@ -14,7 +14,7 @@ const create = async (req, res) => {
   if (user)
     return ErrorHandler({ code: 400, message: "User exist with this number" });
   const otp = crypto.randomInt(100000, 999999);
-
+  console.log({ otp });
   req.body.otp = otp;
   const record = await table.OtpModel.getByMobile(req);
   console.log({ otp });
