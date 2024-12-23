@@ -80,15 +80,6 @@ const init = async (sequelize) => {
       enquiry_radius: {
         type: DataTypes.INTEGER, // in km
       },
-      class_conduct_mode: {
-        type: DataTypes.ENUM({
-          values: ["offline", "online", "nearby", "any"],
-        }),
-        defaultValue: "offline",
-        validate: {
-          isIn: [["offline", "online", "nearby", "any"]],
-        },
-      },
       preference: {
         type: DataTypes.ENUM({
           values: [
@@ -97,7 +88,7 @@ const init = async (sequelize) => {
             "group classes",
           ],
         }),
-        defaultValue: "no preference",
+        // defaultValue: "no preference",
         validate: {
           isIn: [
             ["one on one/private tutions", "no preference", "group classes"],
@@ -108,7 +99,7 @@ const init = async (sequelize) => {
         type: DataTypes.ENUM({
           values: ["anyday", "weekday", "weekend"],
         }),
-        defaultValue: "anyday",
+        // defaultValue: "anyday",
         validate: {
           isIn: [["anyday", "weekday", "weekend"]],
         },
@@ -121,7 +112,7 @@ const init = async (sequelize) => {
             "within a month",
           ],
         }),
-        defaultValue: "immediately",
+        // defaultValue: "immediately",
         validate: {
           isIn: [
             [
@@ -149,7 +140,6 @@ const create = async (req) => {
     intro_video: req.body.intro_video,
     coords: req.body.coords,
     enquiry_radius: req.body.enquiry_radius,
-    class_conduct_mode: req.body.class_conduct_mode,
     degree: req.body.degree,
     preference: req.body.preference,
     availability: req.body.availability,
@@ -199,7 +189,7 @@ const get = async (req, id) => {
       ? true
       : false
     : null;
-  const mode = req.query.mode ? req.query.mode : null;
+  const mode = req.query.mode ? req.query.mode?.split(" ") : null;
 
   if (category.length) {
     whereConditions.push(`subcat.slug = ANY(:category)`);
@@ -251,10 +241,9 @@ const get = async (req, id) => {
     whereConditions.push(`trcrs.is_demo_class = :is_demo_class`);
     queryParams.is_demo_class = isDemo;
   }
-
   if (mode) {
-    whereConditions.push(`ttr.class_conduct_mode = :mode`);
-    queryParams.mode = mode;
+    whereConditions.push(`trcrs.class_conduct_mode && :mode`);
+    queryParams.mode = `{${mode.join(",")}}`;
   }
 
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -276,7 +265,6 @@ const get = async (req, id) => {
     ${whereClause}
     GROUP BY
       tr.id
-    LIMIT :limit OFFSET :offset
   `;
 
   let query = `
@@ -337,7 +325,7 @@ const get = async (req, id) => {
   });
 
   const count = await TutorModel.sequelize.query(countQuery, {
-    replacements: { ...queryParams, limit, offset },
+    replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
   });
@@ -548,7 +536,6 @@ const update = async (req, id) => {
       user_id: req.body.user_id,
       languages: req.body.languages,
       degree: req.body.degree,
-      class_conduct_mode: req.body.class_conduct_mode,
       enquiry_radius: req.body.enquiry_radius,
       boards: req.body.boards,
       fields: req.body.fields,

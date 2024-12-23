@@ -47,6 +47,21 @@ const init = async (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+
+      class_conduct_mode: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        validate: {
+          isValidModes(value) {
+            if (["offline", "online"].includes(value)) {
+              throw new Error("Not valid modes allowed: 'online', 'offline'!");
+            }
+          },
+        },
+      },
+      budgets: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
     },
     {
       createdAt: "created_at",
@@ -64,6 +79,7 @@ const create = async (req) => {
     fields: req.body.fields,
     boards: req.body.boards,
     is_demo_class: req.body.is_demo_class,
+    budgets: req.body.budgets,
   });
 };
 
@@ -114,6 +130,7 @@ const update = async (req, id) => {
       fields: req.body.fields,
       boards: req.body.boards,
       is_demo_class: req.body.is_demo_class,
+      budgets: req.body.budgets,
     },
     {
       where: {
