@@ -6,7 +6,6 @@ import { ErrorHandler } from "../../helpers/handleError.js";
 const { NOT_FOUND } = constants.http.status;
 
 const updateById = async (req, res) => {
-  console.log(req.body);
   const record = await table.StudentModel.getById(req);
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Student not found!" });

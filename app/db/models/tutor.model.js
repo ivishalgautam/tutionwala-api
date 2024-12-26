@@ -190,6 +190,13 @@ const get = async (req, id) => {
       : false
     : null;
   const mode = req.query.mode ? req.query.mode?.split(" ") : null;
+  const flexibility = req.query.flexibility
+    ? req.query.flexibility?.split(" ")
+    : null;
+  const place = req.query.place ? req.query.place?.split(" ") : null;
+  const budgetRange = req.query.budgetRange
+    ? req.query.budgetRange?.split(".")
+    : null;
 
   if (category.length) {
     whereConditions.push(`subcat.slug = ANY(:category)`);
@@ -242,8 +249,39 @@ const get = async (req, id) => {
     queryParams.is_demo_class = isDemo;
   }
   if (mode) {
-    whereConditions.push(`trcrs.class_conduct_mode && :mode`);
+    whereConditions.push(`EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(trcrs.budgets) AS budget
+        WHERE budget->>'mode' = ANY(:mode)
+      )`);
     queryParams.mode = `{${mode.join(",")}}`;
+  }
+  if (flexibility) {
+    whereConditions.push(`EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(trcrs.budgets) AS budget
+        WHERE budget->>'type' = ANY(:flexibility)
+      )`);
+    queryParams.flexibility = `{${flexibility.join(",")}}`;
+  }
+
+  if (place) {
+    whereConditions.push(`EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(trcrs.budgets) AS budget
+        WHERE budget->>'location' = ANY(:place)
+      )`);
+    queryParams.place = `{${place.join(",")}}`;
+  }
+
+  if (budgetRange) {
+    whereConditions.push(`EXISTS (
+        SELECT 1
+        FROM jsonb_array_elements(trcrs.budgets) AS budget
+        WHERE (budget->>'budget')::numeric BETWEEN :minRange AND :maxRange
+      )`);
+    queryParams.minRange = budgetRange[0];
+    queryParams.maxRange = budgetRange[1];
   }
 
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;

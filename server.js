@@ -37,10 +37,6 @@ export default (app) => {
       message: errorMessage,
     });
   });
-  app.addHook("preValidation", (request, reply, done) => {
-    console.log(request.body);
-    done();
-  });
   app.register(fastifyRateLimit, {
     max: Number(process.env.MAX_RATE_LIMIT), // Max requests per minute
     timeWindow: process.env.TIME_WINDOW,

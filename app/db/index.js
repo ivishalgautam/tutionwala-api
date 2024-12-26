@@ -16,6 +16,4 @@ const init = async (sequelizeObj) => {
   }
 };
 
-export default {
-  init,
-};
+export default { init };
