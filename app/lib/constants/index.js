@@ -57,6 +57,7 @@ const constants = {
     ENQUIRY_TABLE: "enquiries",
     FOLLOW_UP_TABLE: "follow_ups",
     QUERY_TABLE: "queries",
+    ENQUIRY_CHAT_TABLE: "enquiry_chats",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

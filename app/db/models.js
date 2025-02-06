@@ -13,6 +13,7 @@ import followupModel from "./models/followup.model.js";
 import tutorCourseModel from "./models/tutor-course.model.js";
 import reviewModel from "./models/review.model.js";
 import queryModel from "./models/query.model.js";
+import enquiryChatModel from "./models/enquiry-chat.model.js";
 
 export default {
   UserModel: userModel,
@@ -29,4 +30,5 @@ export default {
   TutorCourseModel: tutorCourseModel,
   ReviewModel: reviewModel,
   QueryModel: queryModel,
+  EnquiryChatModel: enquiryChatModel,
 };

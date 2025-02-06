@@ -18,9 +18,11 @@ import routes from "./app/routes/v1/index.js";
 import publicRoutes from "./app/routes/v1/public.js";
 import uploadFileRoutes from "./app/api/upload_files/routes.js";
 import { ErrorHandler } from "./app/helpers/handleError.js";
+import fastifySocketIO from "@fastify/websocket";
 
 // other modules
 import ejs from "ejs";
+import controller from "./app/api/enquiry/controller.js";
 
 /*
   Register External packages, routes, database connection
@@ -55,6 +57,14 @@ export default (app) => {
     limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // Set the limit to 5 GB or adjust as needed
   });
 
+  app.register(fastifySocketIO, {
+    cors: { origin: "*" },
+    options: {
+      maxPayload: 1048576,
+      clientTracking: true,
+    },
+  });
+
   // Increase the payload size limit
   app.register(routes, { prefix: "v1" });
   app.register(publicRoutes, { prefix: "v1" });
@@ -64,6 +74,15 @@ export default (app) => {
       ejs: ejs,
     },
   });
+
+  // app.register(async (fastify) => {
+  //   app.get(
+  //     "/v1/enquiries/:id/chat",
+  //     { websocket: true },
+  //     (connection, req, res) =>
+  //       controller.enquiryChat(fastify, connection, req, res)
+  //   );
+  // });
 
   app.register(uploadFileRoutes, { prefix: "v1/upload" });
 };

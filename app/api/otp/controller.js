@@ -6,6 +6,11 @@ import crypto from "crypto";
 import { sendOtp } from "../../helpers/interaktApi.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import authToken from "../../helpers/auth.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+import ejs from "ejs";
+import { sendMail } from "../../helpers/mailer.js";
 
 const { NOT_FOUND, BAD_REQUEST } = constants.http.status;
 
@@ -17,14 +22,30 @@ const create = async (req, res) => {
   console.log({ otp });
   req.body.otp = otp;
   const record = await table.OtpModel.getByMobile(req);
-  console.log({ otp });
   const resp = await sendOtp({
     country_code: req.body?.country_code,
     mobile_number: req.body?.mobile_number,
     fullname: req.body?.fullname,
     otp,
   });
-  // ! change true and check resp
+
+  const otpTemplatePath = path.join(
+    fileURLToPath(import.meta.url),
+    "..",
+    "..",
+    "..",
+    "..",
+    "views",
+    "otp.ejs"
+  );
+
+  const otpTemplate = fs.readFileSync(otpTemplatePath, "utf-8");
+  const otpSend = ejs.render(otpTemplate, {
+    fullname: `${req?.body?.fullname ?? ""}`,
+    otp: otp,
+  });
+  req.body.email && (await sendMail(otpSend, req?.body?.email));
+
   if (resp.statusText === "OK") {
     if (record) {
       await table.OtpModel.update(req);

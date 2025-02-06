@@ -87,7 +87,9 @@ const get = async (req) => {
   const category = req.query.categories ? req.query.categories?.split(".") : [];
 
   if (q) {
-    whereConditions.push(`sbcat.name ILIKE :query OR cat.name ILIKE :query`);
+    whereConditions.push(
+      `sbcat.name ILIKE :query OR cat.name ILIKE :query OR sjt.name ILIKE :query`
+    );
     queryParams.query = `%${q}%`;
   }
   if (featured) {
@@ -112,16 +114,13 @@ const get = async (req) => {
 
   let query = `
   SELECT
-      sbcat.id,
-      sbcat.name,
-      sbcat.image,
-      sbcat.slug,
-      sbcat.is_boards,
-      sbcat.created_at,
+      DISTINCT sbcat.id, sbcat.name, sbcat.image, sbcat.slug, sbcat.is_boards, sbcat.created_at,
       cat.name as category_name,
       COUNT(sbcat.id) OVER()::integer as total
     FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
     LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
+    LEFT JOIN ${constants.models.SUB_CATEGORY_BOARD_MAPPING_TABLE} sb ON sb.sub_category_id = sbcat.id
+    LEFT JOIN ${constants.models.SUBJECT_TABLE} sjt ON sjt.board_id = sb.board_id
     ${whereClause}
     ORDER BY sbcat.name DESC
     LIMIT :limit OFFSET :offset

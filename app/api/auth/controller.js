@@ -8,6 +8,11 @@ import crypto from "crypto";
 import { sendOtp } from "../../helpers/interaktApi.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import moment from "moment";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+import ejs from "ejs";
+import { sendMail } from "../../helpers/mailer.js";
 
 const verifyUserCredentials = async (req, res) => {
   let userData;
@@ -48,7 +53,6 @@ const otpSend = async (req, res) => {
   if (!record) {
     return ErrorHandler({ code: 404, message: "Customer not found!" });
   }
-  console.log({ record });
   if (req.body.role && req.body.role !== record.role) {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
@@ -64,6 +68,7 @@ const otpSend = async (req, res) => {
       ? 111111
       : crypto.randomInt(100000, 999999);
   console.log({ otp });
+
   req.body.email = record.email;
   req.body.mobile_number = record.mobile_number;
   req.body.country_code = record.country_code;
@@ -81,13 +86,29 @@ const otpSend = async (req, res) => {
       fullname: record?.fullname,
       otp,
     });
+
+    const otpTemplatePath = path.join(
+      fileURLToPath(import.meta.url),
+      "..",
+      "..",
+      "..",
+      "..",
+      "views",
+      "otp.ejs"
+    );
+
+    const otpTemplate = fs.readFileSync(otpTemplatePath, "utf-8");
+    const otpSend = ejs.render(otpTemplate, {
+      fullname: `${record.fullname ?? ""}`,
+      otp: otp,
+    });
+    await sendMail(otpSend, record.email);
   }
 
   return res.send({ status: true, message: "Otp sent." });
 };
 
 const otpVerify = async (req, res) => {
-  console.log(req.body);
   const record = await table.OtpModel.getByMobile(req);
 
   if (!record) {

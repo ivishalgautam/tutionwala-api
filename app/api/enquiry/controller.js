@@ -57,6 +57,17 @@ const get = async (req, res) => {
   res.send({ status: true, data: await table.EnquiryModel.get(req) });
 };
 
+const fetchChats = async (req, res) => {
+  const record = await table.EnquiryModel.getById(req);
+  if (!record)
+    return ErrorHandler({ code: 404, message: "Enquiry not found!" });
+
+  res.send({
+    status: true,
+    data: await table.EnquiryChatModel.getByEnquiryId(req),
+  });
+};
+
 const update = async (req, res) => {
   const record = await table.EnquiryModel.getById(req);
   if (!record)
@@ -75,9 +86,52 @@ const deleteById = async (req, res) => {
   res.send({ status: true, message: "Enquiry deleted." });
 };
 
+const enquiryChat = async (fastify, connection, req, res) => {
+  const record = await table.EnquiryModel.getById(req);
+  if (!record)
+    return res.code(404).send({ message: "Enquiry not exist!", status: false });
+
+  const broadcast = (message, senderSocket) => {
+    fastify.websocketServer.clients.forEach((client) => {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            ...message,
+            admin: senderSocket === client,
+          })
+        );
+      }
+    });
+  };
+
+  connection.socket.on("message", async (message) => {
+    const { content } = JSON.parse(message);
+    req.body = {};
+    req.body.content = content;
+    req.body.enquiry_id = req.params.id;
+
+    await table.EnquiryChatModel.create(req);
+    const newMessage = {
+      sender: req.user_data.fullname ?? "",
+      content,
+      id: Date.now(),
+      enquiryId: req.params.id,
+    };
+
+    broadcast(newMessage, connection.socket);
+  });
+
+  // Handle client disconnection
+  connection.socket.on("close", () => {
+    console.log("Client disconnected");
+  });
+};
+
 export default {
   create: create,
   get: get,
   deleteById: deleteById,
   update: update,
+  enquiryChat: enquiryChat,
+  fetchChats: fetchChats,
 };

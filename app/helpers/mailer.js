@@ -1,22 +1,23 @@
 import nodemailer from "nodemailer";
+import config from "../config/index.js";
 
-export const sendCredentials = async (template, mailTo) => {
+export const sendMail = async (template, mailTo) => {
   // Create a transporter object using SMTP transport
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_SERVER,
-    port: process.env.SMTP_PORT,
+    host: config.smtp_host,
+    port: config.smtp_port,
     secure: true, // true for 465, false for other ports
     auth: {
-      user: process.env.SMTP_EMAIL, // Your email
-      pass: process.env.SMTP_PASSWORD, // Your password
+      user: config.smtp_from_email, // Your email
+      pass: config.smtp_password, // Your password
     },
   });
 
   // Define email options
   const mailOptions = {
-    from: process.env.SMTP_EMAIL, // Sender address
+    from: config.smtp_from_email, // Sender address
     to: mailTo, // List of receivers
-    subject: "Credential Details For Onlineparts.shop", // Subject line
+    subject: "Tutionwala", // Subject line
     html: template, // Rendered email template
   };
 

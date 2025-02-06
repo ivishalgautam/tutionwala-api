@@ -24,7 +24,16 @@ function generateRefreshToken(userData) {
 }
 
 const verifyToken = async (req, res) => {
-  const authHeader = req.headers["authorization"];
+  const isWebSocket = req.headers["sec-websocket-key"] !== undefined;
+  let authHeader = null;
+
+  if (isWebSocket) {
+    authHeader = `Bearer ${req.query.at}`;
+    // console.log("object", req.query.at);
+  } else {
+    authHeader = req.headers["authorization"];
+  }
+
   if (!authHeader) {
     res.code(401).send({ message: "unauthorized!" });
   }
