@@ -57,12 +57,6 @@ const otpSend = async (req, res) => {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
 
-  // ! remove false
-  if (false && !record.is_active)
-    return res
-      .code(400)
-      .send({ message: "Please contact administrator for login!" });
-
   const otp =
     record.mobile_number === "8429000000"
       ? 111111

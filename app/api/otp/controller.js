@@ -58,16 +58,13 @@ const create = async (req, res) => {
 };
 
 const verify = async (req, res) => {
-  console.log(req.body);
   const record = await table.OtpModel.getByMobile(req);
 
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Resend OTP!" });
   }
 
-  console.log({ record });
-
-  const isExpired = moment(record.created_at)
+  const isExpired = moment(record.updated_at)
     .add(5, "minutes")
     .isBefore(moment());
 

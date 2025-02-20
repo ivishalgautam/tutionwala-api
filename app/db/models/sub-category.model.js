@@ -170,10 +170,8 @@ const getById = async (req, id) => {
         )
       ) FILTER (WHERE board_data.board_name IS NOT NULL), '[]'
     ) AS boards,
-    ttr.curr_step,
-    ttr.id as tutor_id,
-    stu.curr_step,
-    stu.id as student_id
+    ttr.curr_step, ttr.id as tutor_id,
+    stu.curr_step, stu.id as student_id
   FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
   LEFT JOIN ${constants.models.SUB_CATEGORY_BOARD_MAPPING_TABLE} sbmp
     ON sbmp.sub_category_id = sbcat.id
@@ -268,6 +266,7 @@ const countCategories = async (last_30_days = false) => {
 const getByCategorySlug = async (req, slug) => {
   let whereConditions = [`cat.slug = '${req?.params?.slug || slug}'`];
   const queryParams = {};
+
   let q = req.query.q;
   if (q) {
     whereConditions.push(`sbcat.name ILIKE :query OR cat.name ILIKE :query`);
@@ -299,12 +298,7 @@ const getByCategorySlug = async (req, slug) => {
 
   let query = `
     SELECT
-      sbcat.id,
-      sbcat.name,
-      sbcat.image,
-      sbcat.slug,
-      sbcat.is_boards,
-      sbcat.created_at,
+      sbcat.id, sbcat.name, sbcat.image, sbcat.slug, sbcat.is_boards, sbcat.created_at,
       cat.name as category_name
     FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
     LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
