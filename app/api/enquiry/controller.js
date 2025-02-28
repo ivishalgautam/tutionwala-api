@@ -1,9 +1,13 @@
 "use strict";
 import table from "../../db/models.js";
+import { sequelize } from "../../db/postgres.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import { haversine } from "../../helpers/haversine.js";
 
 const create = async (req, res) => {
+  const mode = req.query.mode || null;
+  if (!mode) return ErrorHandler({ code: 400, message: "Please select mode!" });
+
   const user = await table.UserModel.getById(0, req.user_data.id);
   if (!user) {
     return ErrorHandler({ code: 400, message: "You are not logged in!" });
@@ -18,19 +22,22 @@ const create = async (req, res) => {
   if (!tutor) {
     return ErrorHandler({ code: 400, message: "Tutor not found!" });
   }
-  const distance =
-    haversine(
-      student.coords[0],
-      student.coords[1],
-      tutor.coords[0],
-      tutor.coords[1]
-    ) / 1000;
 
-  if (distance > tutor.enquiry_radius)
-    return ErrorHandler({
-      code: 400,
-      message: "Sorry, You are not in allowed radius of this tutor!",
-    });
+  if (mode === "offline") {
+    const distance =
+      haversine(
+        student.coords[0],
+        student.coords[1],
+        tutor.coords[0],
+        tutor.coords[1]
+      ) / 1000;
+
+    if (distance > tutor.enquiry_radius)
+      return ErrorHandler({
+        code: 400,
+        message: "Sorry, You are not in allowed radius of this tutor!",
+      });
+  }
 
   const subCategory = await table.SubCategoryModel.getById(req);
   if (!tutor) {
@@ -69,21 +76,51 @@ const fetchChats = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const record = await table.EnquiryModel.getById(req);
-  if (!record)
-    return ErrorHandler({ code: 404, message: "Enquiry not found!" });
+  const transaction = await sequelize.transaction();
+  try {
+    const record = await table.EnquiryModel.getById(req);
+    if (!record)
+      return ErrorHandler({ code: 404, message: "Enquiry not found!" });
 
-  await table.EnquiryModel.update(req);
-  res.send({ status: true, message: "Enquiry updated." });
+    const data = await table.EnquiryModel.update(req, 0, { transaction });
+    console.log(data);
+    if (req.body.status === "converted") {
+      await table.EnquiryModel.deleteById(req, 0, { transaction });
+      req.body.tutor_id = record.tutor_id;
+      req.body.student_id = record.student_id;
+      const tutorStuMapRecord =
+        await table.TutorStudentMapModel.getByTutorAndStudentId(
+          record.tutor_id,
+          record.student_id
+        );
+
+      if (!tutorStuMapRecord) {
+        await table.TutorStudentMapModel.create(req, { transaction });
+      }
+    }
+    await transaction.commit();
+    res.send({ status: true, message: "Enquiry updated." });
+  } catch (error) {
+    await transaction.rollback();
+    return ErrorHandler({ message: error?.message ?? "error" });
+  }
 };
 
 const deleteById = async (req, res) => {
-  const record = await table.EnquiryModel.getById(req);
-  if (!record)
-    return ErrorHandler({ code: 404, message: "Enquiry not found!" });
-  console.log({ record });
-  await table.EnquiryModel.deleteById(req);
-  res.send({ status: true, message: "Enquiry deleted." });
+  const transaction = await sequelize.transaction();
+  try {
+    const record = await table.EnquiryModel.getById(req);
+    if (!record)
+      return ErrorHandler({ code: 404, message: "Enquiry not found!" });
+    console.log({ record });
+    await table.EnquiryModel.deleteById(req, 0, { transaction });
+
+    await transaction.commit();
+    res.send({ status: true, message: "Enquiry deleted." });
+  } catch (error) {
+    await transaction.rollback();
+    return ErrorHandler({ message: error.message });
+  }
 };
 
 const enquiryChat = async (fastify, connection, req, res) => {

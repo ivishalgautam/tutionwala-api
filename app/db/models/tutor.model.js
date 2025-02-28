@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import { DataTypes, Deferrable, QueryTypes, where } from "sequelize";
+import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 import { ErrorHandler } from "../../helpers/handleError.js";
 let TutorModel = null;
 
@@ -32,6 +32,16 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB,
         defaultValue: [],
       },
+      type: {
+        type: DataTypes.ENUM(["institute", "individual"]),
+        defaultValue: "individual",
+      },
+      institute_contact_name: {
+        type: DataTypes.STRING,
+      },
+      institute_name: {
+        type: DataTypes.STRING,
+      },
       experience: {
         type: DataTypes.TEXT,
         defaultValue: "",
@@ -55,10 +65,6 @@ const init = async (sequelize) => {
       is_profile_completed: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-      },
-      location: {
-        type: DataTypes.STRING,
-        allowNull: false,
       },
       degree: {
         type: DataTypes.JSONB,
@@ -136,7 +142,6 @@ const init = async (sequelize) => {
 const create = async (req) => {
   const tutor = await TutorModel.create({
     user_id: req.body.user_id,
-    location: req.body.location,
     intro_video: req.body.intro_video,
     coords: req.body.coords,
     enquiry_radius: req.body.enquiry_radius,
@@ -152,10 +157,7 @@ const create = async (req) => {
 const getCourses = async (req) => {
   let query = `
   SELECT
-      subcat.id,
-      subcat.name,
-      subcat.slug,
-      subcat.image,
+      subcat.id, subcat.name, subcat.slug, subcat.image,
       trcrs.id as course_id
     FROM ${constants.models.TUTOR_TABLE} tr
     LEFT JOIN ${constants.models.TUTOR_COURSE_TABLE} trcrs on tr.id = trcrs.tutor_id
@@ -178,10 +180,10 @@ const get = async (req, id) => {
   const category = req.query.category ? req.query.category?.split(" ") : [];
   const language = req.query.language ? req.query.language?.split(" ") : [];
   const minAvgRating = req.query.rating
-    ? req.query.rating.split(" ") ?? []
+    ? (req.query.rating.split(" ") ?? [])
     : null;
   const gender = req.query.gender ? req.query.gender : null;
-  const address = req.query.addr ? req.query.addr : null;
+  // const address = req.query.addr ? req.query.addr : null;
   const lat = req.query.lat ? Number(req.query.lat) : null;
   const lng = req.query.lng ? Number(req.query.lng) : null;
   const isDemo = req.query.demo
@@ -229,7 +231,7 @@ const get = async (req, id) => {
     queryParams.gender = gender;
   }
 
-  if (address && lat && lng) {
+  if (lat && lng) {
     whereConditions.push(`
       ((
         6371 * acos(
@@ -237,11 +239,10 @@ const get = async (req, id) => {
           cos(radians(tr.coords[2]) - radians(:lng)) + 
           sin(radians(:lat)) * sin(radians(tr.coords[1]))
         )
-      ) <= tr.enquiry_radius OR tr.location = :address)
+      ) <= tr.enquiry_radius)
     `);
     queryParams.lat = lat;
     queryParams.lng = lng;
-    queryParams.address = address;
   }
 
   if (isDemo) {
@@ -375,14 +376,12 @@ const get = async (req, id) => {
 
 const getFilteredTutors = async (req) => {
   let queryParams = {};
-  let whereQuery = `WHERE tr.is_profile_completed = true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)`;
+  let whereQuery = `WHERE tr.is_profile_completed IS true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)`;
   const lat = req.body.lat ? Number(req.body.lat) : null;
   const lng = req.body.lng ? Number(req.body.lng) : null;
-  const address = req.body.location ? req.body.location : null;
   const preference = req.body.preference ? req.body.preference : null;
   const availability = req.body.availability ? req.body.availability : null;
   const startDate = req.body.start_date ? req.body.start_date : null;
-
   // (preferenceOpt ? preferenceOpt === preference : true) &&
   // (availabilityOpt ? availabilityOpt === availability : true) &&
   // (startDateOpt ? startDateOpt === start_date : true)
@@ -402,35 +401,26 @@ const getFilteredTutors = async (req) => {
     queryParams.startDate = startDate;
   }
 
-  if (address && lat && lng) {
+  if (lat && lng) {
     whereQuery += `
        AND ((
         6371 * acos(
-          cos(radians(:lat)) * cos(radians(tr.coords[1])) * 
-          cos(radians(tr.coords[2]) - radians(:lng)) + 
+          cos(radians(:lat)) * cos(radians(tr.coords[1])) *
+          cos(radians(tr.coords[2]) - radians(:lng)) +
           sin(radians(:lat)) * sin(radians(tr.coords[1]))
         )
-      ) <= tr.enquiry_radius OR tr.location = :address)
+      ) <= tr.enquiry_radius)
     `;
     queryParams.lat = lat;
     queryParams.lng = lng;
-    queryParams.address = address;
   }
 
   let query = `
   SELECT
-      tr.id,
-      tr.profile_picture,
-      tr.languages,
-      tr.location,
-      tr.experience,
-      tr.created_at,
-      tr.preference,
-      tr.availability,
-      tr.start_date,
+      tr.id, tr.profile_picture, tr.languages, tr.experience, tr.created_at, tr.preference, tr.availability, tr.start_date,
       usr.fullname,
-      COALESCE(JSON_AGG(trcrs.fields) FILTER (WHERE trcrs IS NOT NULL), '[]') AS fields,
-      COALESCE(JSON_AGG(trcrs.boards) FILTER (WHERE trcrs IS NOT NULL), '[]') AS boards
+      JSON_AGG(trcrs.fields) AS fields,
+      JSON_AGG(trcrs.boards) AS boards
     FROM ${constants.models.TUTOR_TABLE} tr
     LEFT JOIN ${constants.models.USER_TABLE} usr ON usr.id = tr.user_id
     LEFT JOIN ${constants.models.TUTOR_COURSE_TABLE} trcrs ON trcrs.tutor_id = tr.id
@@ -439,53 +429,59 @@ const getFilteredTutors = async (req) => {
     GROUP BY tr.id, usr.fullname
     ORDER BY tr.created_at DESC
   `;
-
   const data = await TutorModel.sequelize.query(query, {
     type: QueryTypes.SELECT,
     replacements: { ...queryParams },
     raw: true,
   });
+
   const fieldOptions = req.body.fields ?? [];
   const boardOptions = req.body.boards ?? [];
   const languageOptions = req.body.languages ?? [];
-
   const filteredData = data.filter((item) => {
     const fields = item.fields[0];
     const boards = item.boards[0];
+    console.log({ item });
+    // console.log(boards);
     const languages = item.languages;
+    const isFieldsMatched = fieldOptions.length
+      ? fieldOptions.every(({ fieldName, options }) => {
+          if (!options.length) return true;
+          const field = fields.find(
+            (f) =>
+              String(f?.fieldName).toLowerCase() ===
+              String(fieldName).toLowerCase()
+          );
+          return (
+            field && options.some((option) => field.options.includes(option))
+          );
+        })
+      : true;
 
-    return (
-      (fieldOptions.length
-        ? fieldOptions.every(({ fieldName, options }) => {
-            if (!options.length) return true;
-            const field = fields.find(
-              (f) =>
-                String(f?.fieldName).toLowerCase() ===
-                String(fieldName).toLowerCase()
-            );
-            return (
-              field && options.some((option) => field.options.includes(option))
-            );
-          })
-        : true) &&
-      (boardOptions.length
-        ? boardOptions.some(({ board_name, subjects }) => {
-            if (!subjects.length) return true;
-            const board = boards.find((b) => b?.board_name === board_name);
-            return board && subjects.length
+    const isBoardsMatched = boardOptions.length
+      ? boardOptions.some(({ board_name, subjects }) => {
+          if (!subjects.length) return true;
+          const board = boards.find((b) => b?.board_name === board_name);
+          const isTrue =
+            board && subjects.length
               ? subjects.some((subject) => board.subjects.includes(subject))
               : false;
-          })
-        : true) &&
-      (languageOptions.length
-        ? languageOptions.some((name) => {
-            const language = languages?.find(
-              (l) => String(l.name).toLowerCase() === String(name).toLowerCase()
-            );
-            return language;
-          })
-        : true)
-    );
+          return isTrue;
+        })
+      : true;
+
+    const isLanguageMatched = languageOptions.length
+      ? languageOptions.some((name) => {
+          const language = languages?.find(
+            (l) => l.name.toLowerCase() === name.toLowerCase()
+          );
+          console.log({ matched: language });
+          return language;
+        })
+      : true;
+
+    console.log({ isFieldsMatched, isBoardsMatched, isLanguageMatched });
+    return isFieldsMatched && isBoardsMatched && isLanguageMatched;
   });
 
   return filteredData;
@@ -494,14 +490,7 @@ const getFilteredTutors = async (req) => {
 const getById = async (req, id) => {
   let query = `
   SELECT
-      tr.id,
-      tr.user_id,
-      tr.is_profile_completed,
-      tr.intro_video,
-      tr.created_at,
-      tr.updated_at,
-      tr.coords,
-      tr.enquiry_radius,
+      tr.*,
       jsonb_path_query_first(
         json_agg(
           json_build_object(
@@ -521,7 +510,15 @@ const getById = async (req, id) => {
           'name', subcat.name,
           'image', subcat.image,
           'slug', subcat.slug,
-          'category_name', cat.name
+          'category_name', cat.name,
+          'details', json_build_object(
+              'id', ttrcrs.id,
+              'course_id', ttrcrs.course_id,
+              'boards', ttrcrs.boards,
+              'is_demo_class', ttrcrs.is_demo_class,
+              'class_conduct_mode', ttrcrs.class_conduct_mode,
+              'budgets', ttrcrs.budgets
+          )
         )
       ) as courses,
       COALESCE(

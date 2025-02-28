@@ -11,6 +11,7 @@ import path from "path";
 import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
+import { sendDltOtp } from "../../helpers/dlt-otp.js";
 
 const { NOT_FOUND, BAD_REQUEST } = constants.http.status;
 
@@ -22,12 +23,12 @@ const create = async (req, res) => {
   console.log({ otp });
   req.body.otp = otp;
   const record = await table.OtpModel.getByMobile(req);
-  const resp = await sendOtp({
-    country_code: req.body?.country_code,
-    mobile_number: req.body?.mobile_number,
-    fullname: req.body?.fullname,
+  const resp = await sendDltOtp({
+    phone: req.body?.mobile_number,
     otp,
   });
+
+  console.log(resp.state);
 
   const otpTemplatePath = path.join(
     fileURLToPath(import.meta.url),
@@ -46,7 +47,7 @@ const create = async (req, res) => {
   });
   req.body.email && (await sendMail(otpSend, req?.body?.email));
 
-  if (resp.statusText === "OK") {
+  if (resp.state === "SUBMIT_ACCEPTED") {
     if (record) {
       await table.OtpModel.update(req);
     } else {
@@ -58,6 +59,7 @@ const create = async (req, res) => {
 };
 
 const verify = async (req, res) => {
+  console.log(req.body);
   const record = await table.OtpModel.getByMobile(req);
 
   if (!record) {

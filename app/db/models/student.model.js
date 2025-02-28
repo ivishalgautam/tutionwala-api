@@ -60,17 +60,9 @@ const init = async (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      location: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       coords: {
         type: DataTypes.ARRAY(DataTypes.FLOAT),
         defaultValue: [0, 0],
-      },
-      academic_details: {
-        type: DataTypes.JSONB, // [{institution_name:"", program: "", year:"", grades:"", status:["current","previous"] }]
-        defaultValue: [],
       },
     },
     {
@@ -88,7 +80,6 @@ const create = async (req) => {
     sub_categories: req.body.sub_categories,
     location: req.body.location,
     coords: req.body.coords,
-    academic_details: req.body.academic_details,
   });
 };
 
@@ -120,7 +111,6 @@ const update = async (req, id) => {
       adhaar: req.body.adhaar,
       is_profile_completed: req.body.is_profile_completed,
       coords: req.body.coords,
-      academic_details: req.body.academic_details,
     },
     {
       where: {

@@ -1,8 +1,6 @@
 "use strict";
 import "dotenv/config";
 
-// Set the NODE_ENV to 'development' by default
-process.env.NODE_ENV = process.env.NODE_ENV || "development";
 process.env.PORT = process.env.PORT || 3001;
 
 const config = {
@@ -15,6 +13,9 @@ const config = {
   pg_host: process.env.PG_HOST,
   pg_dialect: process.env.DB_DIALECT,
 
+  // node env
+  node_env: process.env.NODE_ENV ?? "production",
+
   // jwt secret key
   jwt_secret: process.env.SECRET_TOKEN,
   jwt_refresh_secret: process.env.REFRESH_SECRET_TOKEN,
@@ -26,6 +27,11 @@ const config = {
   waffly_template_name: process.env.WAFFLY_TEMPLATE_NAME,
   waffly_api_key: process.env.WAFFLY_API_KEY,
   waffly_license_no: process.env.WAFFLY_LICENSE_NO,
+
+  // smartping
+  smartping_username: process.env.SMARTPING_USERNAME,
+  smartping_password: process.env.SMARTPING_PASSWORD,
+  smartping_content_id: process.env.SMARTPING_CONTENT_ID,
 };
 
 export default config;

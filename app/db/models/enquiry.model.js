@@ -109,10 +109,9 @@ const get = async (req) => {
   });
 };
 
-const update = async (req, id) => {
+const update = async (req, id, { transaction }) => {
   const [rowCount, rows] = await EnquiryModel.update(
     {
-      name: req.body.name,
       status: req.body.status,
     },
     {
@@ -121,6 +120,7 @@ const update = async (req, id) => {
       },
       returning: true,
       raw: true,
+      transaction,
     }
   );
 
@@ -130,9 +130,7 @@ const update = async (req, id) => {
 const getById = async (req, id) => {
   let query = `
     SELECT
-        enq.id,
-        enq.created_at,
-        enq.status
+        enq.*
        FROM ${constants.models.ENQUIRY_TABLE} enq
        WHERE enq.id = '${req?.params?.id || id}'
        GROUP BY
@@ -164,9 +162,10 @@ const getBySubCategoryId = async (req, id) => {
   });
 };
 
-const deleteById = async (req, id) => {
+const deleteById = async (req, id, { transaction }) => {
   return await EnquiryModel.destroy({
-    where: { id: req.params.id || id },
+    where: { id: req?.params?.id || id },
+    transaction,
   });
 };
 

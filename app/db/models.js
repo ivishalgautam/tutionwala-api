@@ -14,6 +14,8 @@ import tutorCourseModel from "./models/tutor-course.model.js";
 import reviewModel from "./models/review.model.js";
 import queryModel from "./models/query.model.js";
 import enquiryChatModel from "./models/enquiry-chat.model.js";
+import tutorStudentMapModel from "./models/tutor-student-map.model.js";
+import tutorStudentChatModel from "./models/tutor-student-chat.model.js";
 
 export default {
   UserModel: userModel,
@@ -31,4 +33,6 @@ export default {
   ReviewModel: reviewModel,
   QueryModel: queryModel,
   EnquiryChatModel: enquiryChatModel,
+  TutorStudentMapModel: tutorStudentMapModel,
+  TutorStudentChatModel: tutorStudentChatModel,
 };

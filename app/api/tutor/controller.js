@@ -33,6 +33,36 @@ const createCourse = async (req, res) => {
   res.send({ status: true, message: "Created" });
 };
 
+const getTutorCourseByTutorAndCourseId = async (req, res) => {
+  const tutor = await table.TutorModel.getByUserId(req);
+  if (!tutor)
+    return ErrorHandler({ code: 404, message: "Tutor not registered!" });
+
+  const courseRecord = await table.SubCategoryModel.getBySlug(
+    0,
+    req.body.sub_category_slug
+  );
+  if (!courseRecord)
+    return ErrorHandler({ code: 404, message: "Course not found!" });
+
+  const record = await table.TutorCourseModel.findByTutorAndCourseId(
+    tutor.id,
+    courseRecord.id
+  );
+
+  res.send({ data: record, status: false });
+};
+
+const updateTutorCourseById = async (req, res) => {
+  const record = await table.TutorCourseModel.getById(req);
+  if (!record)
+    return ErrorHandler({ code: 404, message: "Tutor not registered!" });
+
+  await table.TutorCourseModel.update(req);
+
+  res.send({ message: "Course Updated.", status: false });
+};
+
 const updateById = async (req, res) => {
   const record = await table.TutorModel.getById(req);
   if (!record) {
@@ -82,7 +112,10 @@ const getById = async (req, res) => {
 };
 
 const getTutorDetail = async (req, res) => {
-  res.send({ status: true, data: await table.TutorModel.getByUserId(req) });
+  const data = await table.TutorModel.getByUserId(req);
+  console.log({ data });
+
+  res.send({ status: true, data: data });
 };
 
 const deleteTutorCourseById = async (req, res) => {
@@ -127,7 +160,7 @@ const getFilteredTutors = async (req, res) => {
     : data?.map(
         ({ id, profile_picture, fullname, experience, languages, boards }) => ({
           user: {
-            id,
+            tutor_id: id,
             profile_picture,
             fullname,
             experience,
@@ -154,4 +187,6 @@ export default {
   createCourse: createCourse,
   deleteTutorCourseById: deleteTutorCourseById,
   getTutorDetail: getTutorDetail,
+  getTutorCourseByTutorAndCourseId: getTutorCourseByTutorAndCourseId,
+  updateTutorCourseById: updateTutorCourseById,
 };

@@ -75,14 +75,5 @@ export default (app) => {
     },
   });
 
-  // app.register(async (fastify) => {
-  //   app.get(
-  //     "/v1/enquiries/:id/chat",
-  //     { websocket: true },
-  //     (connection, req, res) =>
-  //       controller.enquiryChat(fastify, connection, req, res)
-  //   );
-  // });
-
   app.register(uploadFileRoutes, { prefix: "v1/upload" });
 };

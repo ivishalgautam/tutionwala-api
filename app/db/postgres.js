@@ -2,19 +2,20 @@ import config from "../config/index.js";
 import { Sequelize } from "sequelize";
 import migration from "./index.js";
 
+export const sequelize = new Sequelize(
+  config.pg_database_name,
+  config.pg_username,
+  config.pg_password,
+  {
+    host: config.pg_host,
+    dialect: config.pg_dialect,
+    logging: false,
+  }
+);
+
 async function postgresConnection(fastify, options) {
   let dbSuccess = null;
 
-  const sequelize = new Sequelize(
-    config.pg_database_name,
-    config.pg_username,
-    config.pg_password,
-    {
-      host: config.pg_host,
-      dialect: config.pg_dialect,
-      logging: false,
-    }
-  );
   try {
     await sequelize.authenticate();
     dbSuccess = true;

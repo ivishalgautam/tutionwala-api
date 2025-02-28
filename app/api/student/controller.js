@@ -25,7 +25,7 @@ const updateById = async (req, res) => {
 const getByUserId = async (req, res) => {
   const record = await table.StudentModel.getByUserId(req);
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Tutor not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Student not found!" });
   }
 
   res.send({ status: true, data: record });

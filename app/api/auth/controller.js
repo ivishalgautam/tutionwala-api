@@ -13,6 +13,7 @@ import path from "path";
 import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
+import { sendDltOtp } from "../../helpers/dlt-otp.js";
 
 const verifyUserCredentials = async (req, res) => {
   let userData;
@@ -74,11 +75,10 @@ const otpSend = async (req, res) => {
   }
 
   if (otpRecord) {
-    const resp = await sendOtp({
-      country_code: record?.country_code,
-      mobile_number: record?.mobile_number,
-      fullname: record?.fullname,
+    const resp = await sendDltOtp({
+      phone: record?.mobile_number,
       otp,
+      // country_code: record?.country_code,
     });
 
     const otpTemplatePath = path.join(
@@ -173,12 +173,10 @@ const createNewUser = async (req, res) => {
   const data = await table.UserModel.create(req);
   userData = await table.UserModel.getById(0, data.id);
 
-  const resp = await sendOtp({
-    country_code: userData?.country_code,
-    mobile_number: userData?.mobile_number,
-    first_name: userData?.first_name,
-    last_name: userData?.last_name,
+  const resp = await sendDltOtp({
+    phone: userData?.mobile_number,
     otp,
+    // country_code: userData?.country_code,
   });
 
   // if (resp.data.result) {

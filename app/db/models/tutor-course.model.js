@@ -1,6 +1,6 @@
 "use strict";
 import constants from "../../lib/constants/index.js";
-import { DataTypes, Deferrable, Op } from "sequelize";
+import { DataTypes, Deferrable, Op, QueryTypes } from "sequelize";
 
 let TutorCourseModel = null;
 
@@ -47,7 +47,6 @@ const init = async (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-
       class_conduct_mode: {
         type: DataTypes.ARRAY(DataTypes.STRING),
         validate: {
@@ -103,13 +102,33 @@ const deleteById = async (req, id) => {
 };
 
 const findByTutorAndCourseId = async (tutorId, courseId) => {
-  return await TutorCourseModel.findOne({
-    where: {
+  const query = `
+  SELECT 
+      tc.*,
+      sbct.is_boards
+    FROM ${constants.models.TUTOR_COURSE_TABLE} tc
+    LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} sbct ON sbct.id = tc.course_id
+    WHERE tc.tutor_id = :tutor_id AND tc.course_id = :course_id
+  `;
+
+  // const data = await TutorCourseModel.findOne({
+  //   where: {
+  //     tutor_id: tutorId,
+  //     course_id: courseId,
+  //   },
+  //   raw: true,
+  // });
+  const data = await TutorCourseModel.sequelize.query(query, {
+    type: QueryTypes.SELECT,
+    replacements: {
       tutor_id: tutorId,
       course_id: courseId,
     },
     raw: true,
+    plain: true,
   });
+
+  return data;
 };
 
 const findFirstUserCourse = async (tutorId) => {
