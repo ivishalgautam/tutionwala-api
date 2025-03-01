@@ -10,11 +10,16 @@ const updateById = async (req, res) => {
   if (!record) {
     return ErrorHandler({ code: NOT_FOUND, message: "Student not found!" });
   }
-  const currStep = req.body.curr_step;
-  req.body.curr_step = currStep < 2 ? currStep + 1 : 2;
-  if (currStep === 2) {
+
+  const currStep = req.body?.curr_step ?? null;
+  if (currStep) {
+    req.body.curr_step = Number(currStep) < 3 ? Number(currStep) + 1 : 3;
+  }
+
+  if (currStep === 3) {
     req.body.is_profile_completed = true;
   }
+
   const updated = await table.StudentModel.update(req);
   if (!updated)
     return ErrorHandler({ code: 500, message: "Error updating student!" });

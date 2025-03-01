@@ -14,7 +14,7 @@ const config = {
   pg_dialect: process.env.DB_DIALECT,
 
   // node env
-  node_env: process.env.NODE_ENV ?? "production",
+  node_env: process.env.NODE_ENV || "production",
 
   // jwt secret key
   jwt_secret: process.env.SECRET_TOKEN,
@@ -32,6 +32,10 @@ const config = {
   smartping_username: process.env.SMARTPING_USERNAME,
   smartping_password: process.env.SMARTPING_PASSWORD,
   smartping_content_id: process.env.SMARTPING_CONTENT_ID,
+
+  // zoop
+  zoop_app_id: process.env.ZOOP_APP_ID,
+  zoop_app_key: process.env.ZOOP_APP_KEY,
 };
 
 export default config;

@@ -201,6 +201,7 @@ const getById = async (req, id) => {
         usr.is_verified,
         usr.gender,
         ttr.profile_picture,
+        stu.profile_picture,
         json_agg(
           json_build_object(
             'id', subcat.id,
@@ -222,7 +223,7 @@ const getById = async (req, id) => {
       } subcat ON subcat.id = ttrcrs.course_id OR subcat.id = ANY(stu.sub_categories)
       WHERE usr.id = '${req?.params?.id || id}'
       GROUP BY
-          usr.id, ttr.profile_picture
+          usr.id, ttr.profile_picture, stu.profile_picture
       LIMIT 1
     `;
 
@@ -344,13 +345,14 @@ const updatePassword = async (req, user_id) => {
   );
 };
 
-const deleteById = async (req, user_id) => {
+const deleteById = async (req, user_id, { transaction }) => {
   return await UserModel.destroy({
     where: {
       id: req?.params?.id || user_id,
     },
     returning: true,
     raw: true,
+    transaction,
   });
 };
 
@@ -385,6 +387,10 @@ const getByEmailId = async (req) => {
       email: req.body.email,
     },
   });
+};
+
+const getByPk = async (req) => {
+  return await UserModel.findByPk(req.user_data.id, { plain: true, raw: true });
 };
 
 const getByResetToken = async (req) => {
@@ -492,4 +498,5 @@ export default {
   verify: verify,
   getByMobile: getByMobile,
   createCustomer: createCustomer,
+  getByPk: getByPk,
 };

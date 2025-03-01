@@ -12,6 +12,7 @@ import reviewRoutes from "../../api/review/routes.js";
 import queryRoutes from "../../api/query/routes.js";
 import reportRoutes from "../../api/dashboard/routes.js";
 import tutorStudentMapRoutes from "../../api/tutor-student-map/routes.js";
+import zoopRoutes from "../../api/zoop-kyc/routes.js";
 
 export default async function routes(fastify, options) {
   fastify.addHook("onRequest", jwtVerify.verifyToken);
@@ -31,4 +32,5 @@ export default async function routes(fastify, options) {
   fastify.register(queryRoutes, { prefix: "queries" });
   fastify.register(reportRoutes, { prefix: "reports" });
   fastify.register(tutorStudentMapRoutes, { prefix: "tutor-student-map" });
+  fastify.register(zoopRoutes, { prefix: "zoop" });
 }

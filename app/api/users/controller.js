@@ -3,6 +3,8 @@
 import table from "../../db/models.js";
 import hash from "../../lib/encryption/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
+import { sequelize } from "../../db/postgres.js";
+import { deleteKey } from "../../helpers/s3.js";
 
 const create = async (req, res) => {
   console.log(req.body);
@@ -29,7 +31,6 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  console.log(req.body);
   const record = await table.UserModel.getById(req);
   if (!record) {
     return ErrorHandler({ code: 404, message: "User not exists" });
@@ -41,6 +42,16 @@ const update = async (req, res) => {
     req.body.new_password = req.body.password;
     await table.UserModel.updatePassword(req, req.user_data.id);
   }
+
+  if (req.user_data.role === "student") {
+    const studentRecord = await table.StudentModel.getByUserId(0, record.id);
+    if (studentRecord) {
+      let newReq = { ...req };
+      newReq.params.id = studentRecord.id;
+      await table.StudentModel.update(newReq);
+    }
+  }
+
   return res.send({ status: true, message: "Updated" });
 };
 
@@ -67,6 +78,55 @@ const deleteById = async (req, res) => {
   }
 
   return res.send({ status: true, data: record });
+};
+
+const deleteAccount = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const record = await table.UserModel.getByPk(req);
+    if (record === 0) {
+      return ErrorHandler({ code: 404, message: "User not exists" });
+    }
+
+    if (record.role === "tutor") {
+      const tutorRecord = await table.TutorModel.getByUserId(0, record.id);
+      if (tutorRecord) {
+        console.log({ tutorRecord });
+        const key1 = tutorRecord.profile_picture?.split(".com/")[1];
+        console.log({ key1 });
+        if (key1) {
+          await deleteKey(key1);
+        }
+        const key2 = tutorRecord.intro_video?.split(".com/")[1];
+        console.log({ key2 });
+        if (key2) {
+          await deleteKey(key2);
+        }
+      }
+    }
+
+    if (record.role === "student") {
+      const studentRecord = await table.StudentModel.getByUserId(0, record.id);
+      if (studentRecord) {
+        const key1 = studentRecord.profile_picture?.split(".com/")[1];
+        console.log({ key1 });
+        if (key1) {
+          await deleteKey(key1);
+        }
+      }
+    }
+
+    await table.UserModel.deleteById(0, record.id, { transaction });
+    await transaction.commit();
+    return res.send({
+      status: true,
+      message: "Account deleted, Thank you for being with us.",
+    });
+  } catch (error) {
+    await transaction.rollback();
+    ErrorHandler({ message: error.message });
+    console.log(error);
+  }
 };
 
 const get = async (req, res) => {
@@ -159,4 +219,5 @@ export default {
   getUser: getUser,
   resetPassword: resetPassword,
   updateStatus: updateStatus,
+  deleteAccount: deleteAccount,
 };
