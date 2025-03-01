@@ -389,8 +389,8 @@ const getByEmailId = async (req) => {
   });
 };
 
-const getByPk = async (req) => {
-  return await UserModel.findByPk(req.user_data.id, { plain: true, raw: true });
+const getByPk = async (pk) => {
+  return await UserModel.findByPk(pk, { plain: true, raw: true });
 };
 
 const getByResetToken = async (req) => {
