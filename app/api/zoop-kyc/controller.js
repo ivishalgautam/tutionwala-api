@@ -2,6 +2,7 @@ import table from "../../db/models.js";
 
 import axios from "axios";
 import configEnv from "../../config/index.js";
+import { ErrorHandler } from "../../helpers/handleError.js";
 
 const aadhaarKYCOTPRequest = async (req, res) => {
   const { role, id } = req.user_data;
@@ -25,7 +26,7 @@ const aadhaarKYCOTPRequest = async (req, res) => {
   let config = {
     method: "post",
     maxBodyLength: Infinity,
-    url: "https://test.zoop.one/in/identity/okyc/otp/request",
+    url: "https://live.zoop.one/in/identity/okyc/otp/request",
     headers: {
       "app-id": configEnv.zoop_app_id,
       "api-key": configEnv.zoop_app_key,
@@ -75,7 +76,7 @@ const aadhaarKYCOTPVerify = async (req, res) => {
   let config = {
     method: "post",
     maxBodyLength: Infinity,
-    url: "https://test.zoop.one/in/identity/okyc/otp/verify",
+    url: "https://live.zoop.one/in/identity/okyc/otp/verify",
     headers: {
       "app-id": configEnv.zoop_app_id,
       "api-key": configEnv.zoop_app_key,
