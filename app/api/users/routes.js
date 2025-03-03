@@ -22,10 +22,6 @@ export default async function routes(fastify, options) {
   fastify.post("/student", { schema: schema.student }, controller.create);
   fastify.get("/", {}, controller.get);
   fastify.get("/:id", { schema: schema.checkParam }, controller.getById);
-  fastify.delete(
-    "/delete-account",
-    { schema: schema.checkParam },
-    controller.deleteAccount
-  );
+  fastify.delete("/delete-account", {}, controller.deleteAccount);
   fastify.delete("/:id", { schema: schema.checkParam }, controller.deleteById);
 }
