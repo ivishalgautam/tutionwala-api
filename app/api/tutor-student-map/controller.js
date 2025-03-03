@@ -47,6 +47,7 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
 
   connection.socket.on("message", async (message) => {
     const { content } = JSON.parse(message);
+    console.log({ content });
     req.body = {};
     req.body.content = content;
     req.body.tutor_student_map_id = req.params.id;
