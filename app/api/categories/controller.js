@@ -78,6 +78,12 @@ const get = async (req, res) => {
   res.send({ status: true, data: data, total: data?.[0]?.total });
 };
 
+const getTabularForm = async (req, res) => {
+  const data = await table.CategoryModel.getInTabularForm(req);
+
+  res.send({ status: true, data: data });
+};
+
 const deleteById = async (req, res) => {
   const record = await table.CategoryModel.getById(req, req.params.id);
 
@@ -104,4 +110,5 @@ export default {
   deleteById: deleteById,
   getBySlug: getBySlug,
   getById: getById,
+  getTabularForm: getTabularForm,
 };
