@@ -117,7 +117,7 @@ const getInTabularForm = async (req) => {
     FROM ${constants.models.CATEGORY_TABLE} cat
     LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} subcat ON subcat.category_id = cat.id
     GROUP BY cat.id
-    ORDER BY cat.created_at DESC
+    ORDER BY cat.created_at ASC
   `;
 
   return await CategoryModel.sequelize.query(query, {
