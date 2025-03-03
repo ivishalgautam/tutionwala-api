@@ -89,7 +89,7 @@ const get = async (req) => {
     ${whereClause}
     GROUP BY
       cat.id
-    ORDER BY cat.created_at DESC
+    ORDER BY cat.name ASC
     LIMIT :limit OFFSET :offset
   `;
 
