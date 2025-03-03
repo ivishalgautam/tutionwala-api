@@ -28,6 +28,7 @@ const fetchChats = async (req, res) => {
 };
 
 const tutorStudentChat = async (fastify, connection, req, res) => {
+  console.log("Client connected");
   const record = await table.TutorStudentMapModel.getById(req);
   if (!record)
     return res.code(404).send({ message: "Chats not exist!", status: false });

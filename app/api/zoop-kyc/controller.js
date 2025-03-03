@@ -5,6 +5,7 @@ import configEnv from "../../config/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 
 const aadhaarKYCOTPRequest = async (req, res) => {
+  console.log(req.ip);
   const { role, id } = req.user_data;
   const tutor = await table.TutorModel.getByUserId(req);
   if (role === "tutor" && !tutor)
@@ -38,7 +39,6 @@ const aadhaarKYCOTPRequest = async (req, res) => {
     const resp = await axios.request(config);
     if (resp.data.success) {
       console.log(resp.data);
-
       res.send(resp.data);
     }
   } catch (error) {
