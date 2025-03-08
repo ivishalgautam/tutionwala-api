@@ -78,6 +78,8 @@ const fetchChats = async (req, res) => {
   if (!record)
     return ErrorHandler({ code: 404, message: "Enquiry not found!" });
 
+  await table.NotificationModel.deleteByEnquiryId(req);
+
   res.send({
     status: true,
     data: await table.EnquiryChatModel.getByEnquiryId(req),
@@ -136,81 +138,74 @@ const onlineUsers = new Map();
 const enquiryChat = async (fastify, connection, req, res) => {
   const transaction = await sequelize.transaction();
 
-  try {
-    const enquiryId = req.params.id;
-    const userId = req.user_data.id;
+  const enquiryId = req.params.id;
+  const userId = req.user_data.id;
 
-    const record = await table.EnquiryModel.getById(req);
-    if (!record)
-      return res
-        .code(404)
-        .send({ message: "Enquiry not exist!", status: false });
+  const record = await table.EnquiryModel.getById(req);
+  if (!record)
+    return res.code(404).send({ message: "Enquiry not exist!", status: false });
 
-    onlineUsers.set(userId, connection.socket);
+  onlineUsers.set(userId, connection.socket);
 
-    const broadcast = (message, senderSocket) => {
-      fastify.websocketServer.clients.forEach((client) => {
-        if (client.readyState === 1) {
-          client.send(
-            JSON.stringify({
-              ...message,
-              admin: senderSocket === client,
-            })
-          );
-        }
-      });
+  const broadcast = (message, senderSocket) => {
+    fastify.websocketServer.clients.forEach((client) => {
+      if (client.readyState === 1) {
+        client.send(
+          JSON.stringify({
+            ...message,
+            admin: senderSocket === client,
+          })
+        );
+      }
+    });
+  };
+
+  connection.socket.on("message", async (message) => {
+    const { content } = JSON.parse(message);
+    req.body = {};
+    req.body.content = content;
+    req.body.enquiry_id = req.params.id;
+
+    await table.EnquiryChatModel.create(req);
+    const newMessage = {
+      sender: req.user_data.fullname ?? "",
+      content,
+      id: Date.now(),
+      enquiryId: req.params.id,
     };
 
-    connection.socket.on("message", async (message) => {
-      const { content } = JSON.parse(message);
-      req.body = {};
-      req.body.content = content;
-      req.body.enquiry_id = req.params.id;
+    broadcast(newMessage, connection.socket);
 
-      await table.EnquiryChatModel.create(req);
-      const newMessage = {
-        sender: req.user_data.fullname ?? "",
-        content,
-        id: Date.now(),
-        enquiryId: req.params.id,
-      };
+    const getReceiverId = async (enquiryId, senderId) => {
+      const enquiry = await table.EnquiryModel.getEnquiryUsers(enquiryId);
+      if (!enquiry) return null;
 
-      broadcast(newMessage, connection.socket);
+      return enquiry.tutor_user_id === senderId
+        ? enquiry.student_user_id
+        : enquiry.tutor_user_id;
+    };
 
-      const getReceiverId = async (enquiryId, senderId) => {
-        const enquiry = await table.EnquiryModel.getEnquiryUsers(enquiryId);
-        if (!enquiry) return null;
+    const receiverId = await getReceiverId(enquiryId, userId);
+    console.log({ onlineUsers });
+    if (!onlineUsers.has(receiverId)) {
+      await sendNotification(receiverId, content);
+    }
 
-        return enquiry.tutor_user_id === senderId
-          ? enquiry.student_user_id
-          : enquiry.tutor_user_id;
-      };
+    async function sendNotification(userId, message) {
+      req.body.user_id = userId;
+      req.body.message = message;
+      req.body.enquiry_id = enquiryId;
+      req.body.type = "enquiry";
 
-      const receiverId = await getReceiverId(enquiryId, userId);
-      console.log({ onlineUsers });
-      if (!onlineUsers.has(receiverId)) {
-        await sendNotification(receiverId, content);
-      }
+      await table.NotificationModel.create(req);
+    }
+  });
 
-      async function sendNotification(userId, message) {
-        req.body.user_id = userId;
-        req.body.message = message;
-        req.body.enquiry_id = enquiryId;
-
-        await table.NotificationModel.create(req, { transaction });
-        await transaction.commit();
-      }
-    });
-
-    // Handle client disconnection
-    connection.socket.on("close", () => {
-      console.log("Client disconnected");
-      onlineUsers.delete(userId);
-    });
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
+  // Handle client disconnection
+  connection.socket.on("close", () => {
+    console.log("Client disconnected");
+    onlineUsers.delete(userId);
+  });
 };
 
 export default {

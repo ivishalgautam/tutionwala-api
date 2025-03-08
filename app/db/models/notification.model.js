@@ -46,15 +46,13 @@ const init = async (sequelize) => {
   await NotificationModel.sync({ alter: true });
 };
 
-const create = async (req, { transaction }) => {
-  return await NotificationModel.create(
-    {
-      user_id: req.body.user_id,
-      enquiry_id: req.body.enquiry_id,
-      message: req.body.message,
-    },
-    { transaction }
-  );
+const create = async (req) => {
+  return await NotificationModel.create({
+    user_id: req.body.user_id,
+    enquiry_id: req.body.enquiry_id,
+    message: req.body.message,
+    type: req.body.type,
+  });
 };
 
 const markAsRead = async (req, id, { transaction }) => {
@@ -70,6 +68,13 @@ const markAsRead = async (req, id, { transaction }) => {
 const getByUserId = async (req, id) => {
   return await NotificationModel.findAll({
     where: { is_read: false, user_id: req.user_data.id || id },
+    attributes: ["id", "enquiry_id", "createdAt", "type", "message"],
+  });
+};
+
+const deleteByEnquiryId = async (req, id) => {
+  return await NotificationModel.destroy({
+    where: { user_id: req.user_data.id, enquiry_id: req?.params?.id || id },
   });
 };
 
@@ -78,4 +83,5 @@ export default {
   create: create,
   markAsRead: markAsRead,
   getByUserId: getByUserId,
+  deleteByEnquiryId: deleteByEnquiryId,
 };

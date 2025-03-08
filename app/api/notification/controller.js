@@ -3,32 +3,30 @@
 import { sequelize } from "../../db/postgres.js";
 import table from "../../db/models.js";
 
+const get = async (req, res) => {
+  const notifications = await table.NotificationModel.getByUserId(req);
+
+  res.send({ status: true, data: notifications });
+};
+
 const getNotifications = async (fastify, connection, req, res) => {
-  const transaction = await sequelize.transaction();
+  const notifications = await table.NotificationModel.getByUserId(req);
 
-  try {
-    const userId = req.user_data.id;
+  // onlineUsers.set(userId, connection.socket);
 
-    const data = await table.NotificationModel.getByUserId(req);
+  fastify.websocketServer.clients.forEach((client) => {
+    if (client.readyState === 1) {
+      notifications.forEach((noti) => client.send(JSON.stringify(noti)));
+    }
+  });
 
-    onlineUsers.set(userId, connection.socket);
-
-    fastify.websocketServer.clients.forEach((client) => {
-      if (client.readyState === 1) {
-        client.send(JSON.stringify(data));
-      }
-    });
-
-    // Handle client disconnection
-    connection.socket.on("close", () => {
-      console.log("Client disconnected");
-    });
-  } catch (error) {
-    await transaction.rollback();
-    throw error;
-  }
+  // Handle client disconnection
+  connection.socket.on("close", () => {
+    console.log("Client disconnected");
+  });
 };
 
 export default {
+  get: get,
   getNotifications: getNotifications,
 };
