@@ -36,6 +36,16 @@ const init = async (sequelize) => {
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
       },
+      sub_category_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        onDelete: "CASCADE",
+        references: {
+          model: constants.models.SUB_CATEGORY_TABLE,
+          key: "id",
+          deferrable: Deferrable.INITIALLY_IMMEDIATE,
+        },
+      },
       status: {
         type: DataTypes.ENUM({ values: ["converted", "pending"] }),
         defaultValue: "pending",
@@ -57,6 +67,7 @@ const create = async (req) => {
   return await EnquiryModel.create({
     tutor_id: req.body.tutor_id,
     student_id: req.body.student_id,
+    sub_category_id: req.body.sub_category_id,
   });
 };
 
@@ -75,14 +86,13 @@ const get = async (req) => {
         enq.id,
         enq.created_at,
         enq.status,
+        sbcat.name as sub_category_name,
         json_agg(
           json_build_object(
             'user_id', stuusr.id,
             'student_id', stu.id,
             'fullname', stuusr.fullname,
-            'profile_picture', stu.profile_picture,
-            'mobile_number', stuusr.mobile_number,
-            'email', stuusr.email
+            'profile_picture', stu.profile_picture
           )
         ) as student,
         json_agg(
@@ -94,13 +104,13 @@ const get = async (req) => {
           )
         ) as tutor
        FROM ${constants.models.ENQUIRY_TABLE} enq
+       LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} sbcat ON sbcat.id = enq.sub_category_id 
        LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = enq.tutor_id 
        LEFT JOIN ${constants.models.USER_TABLE} tutusr ON tutusr.id = tut.user_id 
        LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = enq.student_id 
        LEFT JOIN ${constants.models.USER_TABLE} stuusr ON stuusr.id = stu.user_id 
        ${whereQuery}
-       GROUP BY
-          enq.id
+       GROUP BY enq.id, sbcat.name
   `;
 
   return await EnquiryModel.sequelize.query(query, {
@@ -144,11 +154,16 @@ const getById = async (req, id) => {
   });
 };
 
-const getByStudentAndTutor = async (tutor_id, student_id) => {
+const getByStudentAndTutorAndSubCategory = async (
+  tutor_id,
+  student_id,
+  sub_category_id = null
+) => {
   return await EnquiryModel.findOne({
     where: {
       tutor_id: tutor_id,
       student_id: student_id,
+      sub_category_id: sub_category_id,
     },
   });
 };
@@ -159,6 +174,25 @@ const getBySubCategoryId = async (req, id) => {
       sub_category_id: req?.params?.id || id,
     },
     raw: true,
+  });
+};
+
+const getEnquiryUsers = async (enquiryId) => {
+  let query = `
+  SELECT
+      stu.user_id as student_user_id,
+      tut.user_id as tutor_user_id
+    FROM ${constants.models.ENQUIRY_TABLE} enq
+    LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = enq.student_id
+    LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = enq.tutor_id
+    WHERE enq.id = :enquiryId
+  `;
+
+  return await EnquiryModel.sequelize.query(query, {
+    replacements: { enquiryId },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
   });
 };
 
@@ -184,5 +218,6 @@ export default {
   deleteById: deleteById,
   deleteBySubCategoryAndBoard: deleteBySubCategoryAndBoard,
   getBySubCategoryId: getBySubCategoryId,
-  getByStudentAndTutor: getByStudentAndTutor,
+  getByStudentAndTutorAndSubCategory: getByStudentAndTutorAndSubCategory,
+  getEnquiryUsers: getEnquiryUsers,
 };

@@ -5,7 +5,6 @@ import configEnv from "../../config/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 
 const aadhaarKYCOTPRequest = async (req, res) => {
-  console.log(req.ip);
   const { role, id } = req.user_data;
   const tutor = await table.TutorModel.getByUserId(req);
   if (role === "tutor" && !tutor)
@@ -87,17 +86,17 @@ const aadhaarKYCOTPVerify = async (req, res) => {
   try {
     const resp = await axios.request(config);
     if (resp.data.success) {
-      req.body.curr_step = 3;
-      req.body.is_profile_completed = true;
+      req.body.is_aadhaar_verified = true;
+      req.body.fullname = resp.data.result.user_full_name;
 
-      if (role === "tutor") {
-        await table.TutorModel.update(req, tutor.id);
-      } else if (role === "student") {
-        await table.StudentModel.update(req, student.id);
-      } else {
-        return res.code(401).send({ status: false, message: "Unauthorized!" });
+      await table.UserModel.update(req, id);
+
+      req.body.details = resp.data.result;
+
+      const record = await table.AadhaarModel.getByUserId(id);
+      if (!record) {
+        await table.AadhaarModel.create(req, resp.data.result);
       }
-
       res.send({ status: true, message: "Verified." });
     }
   } catch (error) {

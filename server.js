@@ -10,6 +10,7 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
+import fastifySocketIO from "@fastify/websocket";
 
 // import internal modules
 import authRoutes from "./app/api/auth/routes.js";
@@ -18,7 +19,6 @@ import routes from "./app/routes/v1/index.js";
 import publicRoutes from "./app/routes/v1/public.js";
 import uploadFileRoutes from "./app/api/upload_files/routes.js";
 import { ErrorHandler } from "./app/helpers/handleError.js";
-import fastifySocketIO from "@fastify/websocket";
 
 // other modules
 import ejs from "ejs";

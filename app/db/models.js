@@ -16,6 +16,8 @@ import queryModel from "./models/query.model.js";
 import enquiryChatModel from "./models/enquiry-chat.model.js";
 import tutorStudentMapModel from "./models/tutor-student-map.model.js";
 import tutorStudentChatModel from "./models/tutor-student-chat.model.js";
+import aadhaarDetailsModel from "./models/aadhaar-details.model.js";
+import notificationModel from "./models/notification.model.js";
 
 export default {
   UserModel: userModel,
@@ -35,4 +37,6 @@ export default {
   EnquiryChatModel: enquiryChatModel,
   TutorStudentMapModel: tutorStudentMapModel,
   TutorStudentChatModel: tutorStudentChatModel,
+  AadhaarModel: aadhaarDetailsModel,
+  NotificationModel: notificationModel,
 };

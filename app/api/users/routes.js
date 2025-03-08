@@ -24,4 +24,11 @@ export default async function routes(fastify, options) {
   fastify.get("/:id", { schema: schema.checkParam }, controller.getById);
   fastify.delete("/delete-account", {}, controller.deleteAccount);
   fastify.delete("/:id", { schema: schema.checkParam }, controller.deleteById);
+  fastify.get(
+    "/get-aadhaar-details/:id",
+    { schema: schema.checkParam },
+    controller.getAadhaarDetails
+  );
+  fastify.post("/email/otp/send", {}, controller.emailVerificationOTPSend);
+  fastify.post("/email/otp/verify", {}, controller.verifyEmailOtp);
 }

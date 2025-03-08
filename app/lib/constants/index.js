@@ -52,6 +52,7 @@ const constants = {
     SUB_CATEGORY_FIELDS_TABLE: "sub_categories_fields",
     BOARD_TABLE: "boards",
     SUBJECT_TABLE: "subjects",
+    AADHAAR_TABLE: "aadhaar_details",
     REVIEW_TABLE: "reviews",
     TUTOR_COURSE_TABLE: "tutor_courses",
     TUTOR_STUDENT_MAP_TABLE: "tutor_student_mappings",
@@ -60,6 +61,7 @@ const constants = {
     QUERY_TABLE: "queries",
     ENQUIRY_CHAT_TABLE: "enquiry_chats",
     TUTOR_STUDENT_CHAT_TABLE: "tutor_student_chats",
+    NOTIFICATION_TABLE: "notifications",
   },
   bcrypt: {
     SALT_ROUNDS: 10,

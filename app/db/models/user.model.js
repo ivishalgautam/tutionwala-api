@@ -26,6 +26,10 @@ const init = async (sequelize) => {
           msg: "Username already in use!",
         },
       },
+      dob: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+      },
       email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -65,6 +69,10 @@ const init = async (sequelize) => {
           notEmpty: true,
         },
       },
+      father_name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       password: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -95,6 +103,14 @@ const init = async (sequelize) => {
         },
       },
       is_verified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      is_email_verified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      is_aadhaar_verified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
@@ -173,8 +189,12 @@ const get = async (req) => {
   const query = `
   SELECT 
     usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, usr.is_active, usr.is_verified, usr.created_at,
+    ttr.id as tutor_id,
     COUNT(usr.id) OVER()::integer as total
   FROM ${constants.models.USER_TABLE} usr
+  LEFT JOIN ${
+    constants.models.TUTOR_TABLE
+  } ttr ON ttr.user_id = usr.id AND usr.role = 'tutor'
   ${whereClause}
   LIMIT :limit OFFSET :offset
   `;
@@ -189,20 +209,8 @@ const get = async (req) => {
 const getById = async (req, id) => {
   let query = `
     SELECT
-        usr.id,
-        usr.username,
-        usr.password,
-        usr.email,
-        usr.fullname,
-        usr.is_active,
-        usr.role,
-        usr.mobile_number,
-        usr.country_code,
-        usr.is_verified,
-        usr.gender,
-        ttr.profile_picture,
-        stu.profile_picture,
-        json_agg(
+        usr.*,
+        ttr.profile_picture, stu.profile_picture, json_agg(
           json_build_object(
             'id', subcat.id,
             'slug', subcat.slug
@@ -298,7 +306,7 @@ const getByMobile = async (req, record = undefined) => {
   });
 };
 
-const update = async (req) => {
+const update = async (req, id) => {
   return await UserModel.update(
     {
       username: req.body?.username,
@@ -309,10 +317,14 @@ const update = async (req) => {
       country_code: req.body?.country_code?.replace(/\s/g, ""),
       role: req.body?.role,
       profile_picture: req.body?.profile_picture,
+      dob: req.body?.dob,
+      is_aadhaar_verified: req.body?.is_aadhaar_verified,
+      is_email_verified: req.body?.is_email_verified,
+      father_name: req.body?.father_name,
     },
     {
       where: {
-        id: req.params.id,
+        id: req?.params?.id || id,
       },
       returning: [
         "id",
@@ -353,6 +365,24 @@ const deleteById = async (req, user_id, { transaction }) => {
     returning: true,
     raw: true,
     transaction,
+  });
+};
+
+const getAadhaarDetails = async (req, user_id) => {
+  let query = `
+  SELECT
+      adhr.*
+    FROM ${constants.models.AADHAAR_TABLE} adhr
+    WHERE adhr.user_id = :userId
+  `;
+
+  return await UserModel.sequelize.query(query, {
+    replacements: {
+      userId: req?.params?.id || user_id,
+    },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
   });
 };
 
@@ -457,6 +487,40 @@ const verify = async ({ user_id, status }) => {
   return rows;
 };
 
+const verifyEmail = async ({ user_id, status }) => {
+  const [rowCount, rows] = await UserModel.update(
+    {
+      is_email_verified: status,
+    },
+    {
+      where: {
+        id: user_id,
+      },
+      plain: true,
+      raw: true,
+    }
+  );
+
+  return rows;
+};
+
+const verifyAadhaar = async ({ user_id, status }) => {
+  const [rowCount, rows] = await UserModel.update(
+    {
+      is_aadhaar_verified: status,
+    },
+    {
+      where: {
+        id: user_id,
+      },
+      plain: true,
+      raw: true,
+    }
+  );
+
+  return rows;
+};
+
 const findUsersWithBirthdayToday = async () => {
   const startIST = moment().startOf("day").toDate();
   const endIST = moment().endOf("day").toDate();
@@ -499,4 +563,7 @@ export default {
   getByMobile: getByMobile,
   createCustomer: createCustomer,
   getByPk: getByPk,
+  getAadhaarDetails: getAadhaarDetails,
+  verifyEmail: verifyEmail,
+  verifyAadhaar: verifyAadhaar,
 };

@@ -2,6 +2,7 @@
 import constants from "../../lib/constants/index.js";
 import { DataTypes, Deferrable, QueryTypes } from "sequelize";
 import { ErrorHandler } from "../../helpers/handleError.js";
+import { randomBytesGenerator } from "../../lib/encryption/index.js";
 let TutorModel = null;
 
 const init = async (sequelize) => {
@@ -129,6 +130,12 @@ const init = async (sequelize) => {
           ],
         },
       },
+      // tutor_identifier: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      //   unique: true,
+      //   defaultValue: `TUT${randomBytesGenerator(4)}`,
+      // },
     },
     {
       createdAt: "created_at",
@@ -512,12 +519,12 @@ const getById = async (req, id) => {
           'slug', subcat.slug,
           'category_name', cat.name,
           'details', json_build_object(
-              'id', ttrcrs.id,
-              'course_id', ttrcrs.course_id,
-              'boards', ttrcrs.boards,
-              'is_demo_class', ttrcrs.is_demo_class,
-              'class_conduct_mode', ttrcrs.class_conduct_mode,
-              'budgets', ttrcrs.budgets
+            'id', ttrcrs.id,
+            'course_id', ttrcrs.course_id,
+            'boards', ttrcrs.boards,
+            'is_demo_class', ttrcrs.is_demo_class,
+            'class_conduct_mode', ttrcrs.class_conduct_mode,
+            'budgets', ttrcrs.budgets
           )
         )
       ) as courses,

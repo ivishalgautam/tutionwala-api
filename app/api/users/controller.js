@@ -5,6 +5,13 @@ import hash from "../../lib/encryption/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import { sequelize } from "../../db/postgres.js";
 import { deleteKey } from "../../helpers/s3.js";
+import { randomInt } from "crypto";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+import ejs from "ejs";
+import { sendMail } from "../../helpers/mailer.js";
+import moment from "moment";
 
 const create = async (req, res) => {
   console.log(req.body);
@@ -178,6 +185,17 @@ const getById = async (req, res) => {
   return res.send({ status: true, record });
 };
 
+const getAadhaarDetails = async (req, res) => {
+  const record = await table.UserModel.getById(req);
+  if (!record) {
+    return ErrorHandler({ code: 404, message: "User not exists" });
+  }
+
+  const data = await table.UserModel.getAadhaarDetails(req);
+
+  return res.send({ status: true, data });
+};
+
 const updatePassword = async (req, res) => {
   const record = await table.UserModel.getById(req);
 
@@ -241,6 +259,79 @@ const resetPassword = async (req, res) => {
   });
 };
 
+const emailVerificationOTPSend = async (req, res) => {
+  const record = await table.UserModel.getByEmailId(req);
+
+  if (!record) {
+    return ErrorHandler({ code: 404, message: "Customer not found!" });
+  }
+
+  const otp = randomInt(100000, 999999);
+  console.log({ otp });
+
+  req.body.email = record.email;
+  req.body.mobile_number = record.mobile_number;
+  req.body.country_code = record.country_code;
+  req.body.otp = otp;
+
+  let otpRecord = null;
+  if (record) {
+    otpRecord = await table.OtpModel.create(req);
+  }
+
+  if (otpRecord) {
+    const otpTemplatePath = path.join(
+      fileURLToPath(import.meta.url),
+      "..",
+      "..",
+      "..",
+      "..",
+      "views",
+      "otp.ejs"
+    );
+
+    const otpTemplate = fs.readFileSync(otpTemplatePath, "utf-8");
+    const otpSend = ejs.render(otpTemplate, {
+      fullname: `${record.fullname ?? ""}`,
+      otp: otp,
+    });
+
+    await sendMail(otpSend, record.email);
+  }
+
+  return res.send({ status: true, message: "Otp sent." });
+};
+
+const verifyEmailOtp = async (req, res) => {
+  console.log(req.body);
+  const record = await table.OtpModel.getByEmail(req);
+
+  if (!record) {
+    return ErrorHandler({ code: 404, message: "Resend OTP!" });
+  }
+  console.log({ record });
+  const isExpired = moment(record.created_at)
+    .add(5, "minutes")
+    .isBefore(moment());
+
+  if (isExpired) {
+    await table.OtpModel.deleteByEmail(req);
+    return ErrorHandler({ code: 400, message: "Please resend OTP!" });
+  }
+
+  if (record.otp != req.body.otp) {
+    return ErrorHandler({ code: 400, message: "Incorrect otp!" });
+  }
+
+  req.body.is_email_verified = true;
+  await table.UserModel.update(req, req.user_data.id);
+
+  return res.send({
+    status: true,
+    message: "Email verified.",
+  });
+};
+
 export default {
   create: create,
   update: update,
@@ -253,4 +344,7 @@ export default {
   resetPassword: resetPassword,
   updateStatus: updateStatus,
   deleteAccount: deleteAccount,
+  getAadhaarDetails: getAadhaarDetails,
+  emailVerificationOTPSend: emailVerificationOTPSend,
+  verifyEmailOtp: verifyEmailOtp,
 };

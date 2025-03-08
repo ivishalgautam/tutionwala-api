@@ -103,6 +103,12 @@ const deleteByMobile = async (req) => {
   });
 };
 
+const deleteByEmail = async (req) => {
+  return await OtpModel.destroy({
+    where: { email: req.body.email },
+  });
+};
+
 export default {
   init: init,
   create: create,
@@ -110,4 +116,5 @@ export default {
   getByEmail: getByEmail,
   getByMobile: getByMobile,
   deleteByMobile: deleteByMobile,
+  deleteByEmail: deleteByEmail,
 };

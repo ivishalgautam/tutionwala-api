@@ -13,10 +13,10 @@ const updateById = async (req, res) => {
 
   const currStep = req.body?.curr_step ?? null;
   if (currStep) {
-    req.body.curr_step = Number(currStep) < 3 ? Number(currStep) + 1 : 3;
+    req.body.curr_step = Number(currStep) < 2 ? Number(currStep) + 1 : 2;
   }
 
-  if (currStep === 3) {
+  if (currStep === 2) {
     req.body.is_profile_completed = true;
   }
 

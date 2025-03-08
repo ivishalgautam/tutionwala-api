@@ -6,6 +6,7 @@ import { haversine } from "../../helpers/haversine.js";
 
 const create = async (req, res) => {
   const mode = req.query.mode || null;
+  const subCategorySlug = req.query.category || null;
   if (!mode) return ErrorHandler({ code: 400, message: "Please select mode!" });
 
   const user = await table.UserModel.getById(0, req.user_data.id);
@@ -39,14 +40,18 @@ const create = async (req, res) => {
       });
   }
 
-  const subCategory = await table.SubCategoryModel.getById(req);
+  let subCategory = null;
+  if (subCategorySlug) {
+    subCategory = await table.SubCategoryModel.getBySlug(0, subCategorySlug);
+  }
   if (!tutor) {
     return ErrorHandler({ code: 400, message: "Tutor not found!" });
   }
 
-  const enquiry = await table.EnquiryModel.getByStudentAndTutor(
+  const enquiry = await table.EnquiryModel.getByStudentAndTutorAndSubCategory(
     tutor.id,
-    student.id
+    student.id,
+    subCategory?.id ?? null
   );
 
   if (enquiry) {
@@ -54,7 +59,11 @@ const create = async (req, res) => {
   }
 
   await table.EnquiryModel.create({
-    body: { student_id: student.id, tutor_id: tutor.id },
+    body: {
+      student_id: student.id,
+      tutor_id: tutor.id,
+      sub_category_id: subCategory?.id ?? null,
+    },
   });
 
   res.send({ status: true, message: "Enquiry sent." });
@@ -123,45 +132,85 @@ const deleteById = async (req, res) => {
   }
 };
 
+const onlineUsers = new Map();
 const enquiryChat = async (fastify, connection, req, res) => {
-  const record = await table.EnquiryModel.getById(req);
-  if (!record)
-    return res.code(404).send({ message: "Enquiry not exist!", status: false });
+  const transaction = await sequelize.transaction();
 
-  const broadcast = (message, senderSocket) => {
-    fastify.websocketServer.clients.forEach((client) => {
-      if (client.readyState === 1) {
-        client.send(
-          JSON.stringify({
-            ...message,
-            admin: senderSocket === client,
-          })
-        );
-      }
-    });
-  };
+  try {
+    const enquiryId = req.params.id;
+    const userId = req.user_data.id;
 
-  connection.socket.on("message", async (message) => {
-    const { content } = JSON.parse(message);
-    req.body = {};
-    req.body.content = content;
-    req.body.enquiry_id = req.params.id;
+    const record = await table.EnquiryModel.getById(req);
+    if (!record)
+      return res
+        .code(404)
+        .send({ message: "Enquiry not exist!", status: false });
 
-    await table.EnquiryChatModel.create(req);
-    const newMessage = {
-      sender: req.user_data.fullname ?? "",
-      content,
-      id: Date.now(),
-      enquiryId: req.params.id,
+    onlineUsers.set(userId, connection.socket);
+
+    const broadcast = (message, senderSocket) => {
+      fastify.websocketServer.clients.forEach((client) => {
+        if (client.readyState === 1) {
+          client.send(
+            JSON.stringify({
+              ...message,
+              admin: senderSocket === client,
+            })
+          );
+        }
+      });
     };
 
-    broadcast(newMessage, connection.socket);
-  });
+    connection.socket.on("message", async (message) => {
+      const { content } = JSON.parse(message);
+      req.body = {};
+      req.body.content = content;
+      req.body.enquiry_id = req.params.id;
 
-  // Handle client disconnection
-  connection.socket.on("close", () => {
-    console.log("Client disconnected");
-  });
+      await table.EnquiryChatModel.create(req);
+      const newMessage = {
+        sender: req.user_data.fullname ?? "",
+        content,
+        id: Date.now(),
+        enquiryId: req.params.id,
+      };
+
+      broadcast(newMessage, connection.socket);
+
+      const getReceiverId = async (enquiryId, senderId) => {
+        const enquiry = await table.EnquiryModel.getEnquiryUsers(enquiryId);
+        if (!enquiry) return null;
+
+        return enquiry.tutor_user_id === senderId
+          ? enquiry.student_user_id
+          : enquiry.tutor_user_id;
+      };
+
+      const receiverId = await getReceiverId(enquiryId, userId);
+      console.log({ onlineUsers });
+      if (!onlineUsers.has(receiverId)) {
+        await sendNotification(receiverId, content);
+      }
+
+      async function sendNotification(userId, message) {
+        req.body.user_id = userId;
+        req.body.message = message;
+        req.body.enquiry_id = enquiryId;
+
+        await table.NotificationModel.create(req, { transaction });
+        await transaction.commit();
+      }
+    });
+
+    // Handle client disconnection
+    connection.socket.on("close", () => {
+      console.log("Client disconnected");
+      onlineUsers.delete(userId);
+    });
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 export default {
