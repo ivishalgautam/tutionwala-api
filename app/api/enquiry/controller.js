@@ -136,8 +136,6 @@ const deleteById = async (req, res) => {
 
 const onlineUsers = new Map();
 const enquiryChat = async (fastify, connection, req, res) => {
-  const transaction = await sequelize.transaction();
-
   const enquiryId = req.params.id;
   const userId = req.user_data.id;
 
@@ -186,7 +184,6 @@ const enquiryChat = async (fastify, connection, req, res) => {
     };
 
     const receiverId = await getReceiverId(enquiryId, userId);
-    console.log({ onlineUsers });
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
     }

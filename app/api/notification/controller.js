@@ -1,7 +1,6 @@
 "use strict";
-
-import { sequelize } from "../../db/postgres.js";
 import table from "../../db/models.js";
+import constants from "../../lib/constants/index.js";
 
 const get = async (req, res) => {
   const notifications = await table.NotificationModel.getByUserId(req);
@@ -10,9 +9,10 @@ const get = async (req, res) => {
 };
 
 const getNotifications = async (fastify, connection, req, res) => {
+  const userId = req.user_data.id;
   const notifications = await table.NotificationModel.getByUserId(req);
 
-  // onlineUsers.set(userId, connection.socket);
+  constants.onlineUsers.set(userId, connection.socket);
 
   fastify.websocketServer.clients.forEach((client) => {
     if (client.readyState === 1) {

@@ -156,6 +156,9 @@ const create = async (req) => {
     preference: req.body.preference,
     availability: req.body.availability,
     start_date: req.body.start_date,
+    type: req.body.type,
+    institute_contact_name: req.body.institute_contact_name,
+    institute_name: req.body.institute_name,
   });
 
   return tutor.dataValues;

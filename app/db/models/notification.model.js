@@ -29,6 +29,16 @@ const init = async (sequelize) => {
         deferrable: Deferrable.INITIALLY_IMMEDIATE,
       },
     },
+    chat_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      onDelete: "CASCADE",
+      references: {
+        model: constants.models.TUTOR_STUDENT_MAP_TABLE,
+        key: "id",
+        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+      },
+    },
     message: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -38,7 +48,7 @@ const init = async (sequelize) => {
       defaultValue: false,
     },
     type: {
-      type: DataTypes.ENUM(["enquiry", ""]),
+      type: DataTypes.ENUM(["enquiry", "chat", ""]),
       defaultValue: "",
     },
   });
@@ -50,6 +60,7 @@ const create = async (req) => {
   return await NotificationModel.create({
     user_id: req.body.user_id,
     enquiry_id: req.body.enquiry_id,
+    chat_id: req.body.chat_id,
     message: req.body.message,
     type: req.body.type,
   });
@@ -68,7 +79,7 @@ const markAsRead = async (req, id, { transaction }) => {
 const getByUserId = async (req, id) => {
   return await NotificationModel.findAll({
     where: { is_read: false, user_id: req.user_data.id || id },
-    attributes: ["id", "enquiry_id", "createdAt", "type", "message"],
+    attributes: ["id", "enquiry_id", "createdAt", "type", "message", "chat_id"],
   });
 };
 
@@ -78,10 +89,17 @@ const deleteByEnquiryId = async (req, id) => {
   });
 };
 
+const deleteByChatId = async (req, id) => {
+  return await NotificationModel.destroy({
+    where: { user_id: req.user_data.id, chat_id: req?.params?.id || id },
+  });
+};
+
 export default {
   init: init,
   create: create,
   markAsRead: markAsRead,
   getByUserId: getByUserId,
   deleteByEnquiryId: deleteByEnquiryId,
+  deleteByChatId: deleteByChatId,
 };

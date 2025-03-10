@@ -17,10 +17,10 @@ const zoopOKYCRequestSchema = z.object({
 const zoopOKYCVerifySchema = z.object({
   request_id: z.string().uuid(),
   otp: z.string().min(6).max(6),
-  consent: z.literal("Y"),
-  consent_text: z.literal(
-    "I hear by declare my consent agreement for fetching my information via ZOOP API"
-  ),
+  // consent: z.literal("Y"),
+  // consent_text: z.literal(
+  //   "I hear by declare my consent agreement for fetching my information via ZOOP API"
+  // ),
 });
 
 const aadhaarKYCOTPRequest = async (req, res) => {

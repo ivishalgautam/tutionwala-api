@@ -188,7 +188,7 @@ const get = async (req) => {
 
   const query = `
   SELECT 
-    usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, usr.is_active, usr.is_verified, usr.created_at,
+    usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, usr.is_active, usr.is_verified, usr.created_at, usr.is_aadhaar_verified,
     ttr.id as tutor_id,
     COUNT(usr.id) OVER()::integer as total
   FROM ${constants.models.USER_TABLE} usr
@@ -208,31 +208,32 @@ const get = async (req) => {
 
 const getById = async (req, id) => {
   let query = `
-    SELECT
-        usr.*,
-        ttr.profile_picture, stu.profile_picture, json_agg(
-          json_build_object(
-            'id', subcat.id,
-            'slug', subcat.slug
-          )
-        ) as sub_categories
-      FROM ${constants.models.USER_TABLE} usr
-      LEFT JOIN ${
-        constants.models.TUTOR_TABLE
-      } ttr ON ttr.user_id = usr.id AND usr.role = 'tutor'
-      LEFT JOIN ${
-        constants.models.TUTOR_COURSE_TABLE
-      } ttrcrs ON ttrcrs.tutor_id = ttr.id
-      LEFT JOIN ${
-        constants.models.STUDENT_TABLE
-      } stu ON stu.user_id = usr.id AND usr.role = 'student'
-      LEFT JOIN ${
-        constants.models.SUB_CATEGORY_TABLE
-      } subcat ON subcat.id = ttrcrs.course_id OR subcat.id = ANY(stu.sub_categories)
-      WHERE usr.id = '${req?.params?.id || id}'
-      GROUP BY
-          usr.id, ttr.profile_picture, stu.profile_picture
-      LIMIT 1
+   SELECT
+    usr.*,
+    ttr.profile_picture, stu.profile_picture, 
+    ttr.institute_name, ttr.institute_contact_name, ttr.type as tutor_type,
+    (
+      SELECT json_agg(DISTINCT jsonb_build_object(
+        'id', subcat.id,
+        'slug', subcat.slug
+      ))
+      FROM ${constants.models.SUB_CATEGORY_TABLE} subcat
+      LEFT JOIN ${constants.models.TUTOR_COURSE_TABLE} ttrcrs 
+        ON subcat.id = ttrcrs.course_id
+      LEFT JOIN ${constants.models.TUTOR_TABLE} inner_ttr
+        ON inner_ttr.id = ttrcrs.tutor_id
+      LEFT JOIN ${constants.models.STUDENT_TABLE} inner_stu
+        ON inner_stu.user_id = usr.id
+      WHERE inner_ttr.user_id = usr.id OR subcat.id = ANY(inner_stu.sub_categories)
+    ) AS sub_categories
+    FROM ${constants.models.USER_TABLE} usr
+    LEFT JOIN ${constants.models.TUTOR_TABLE} ttr 
+      ON ttr.user_id = usr.id AND usr.role = 'tutor'
+    LEFT JOIN ${constants.models.STUDENT_TABLE} stu 
+      ON stu.user_id = usr.id AND usr.role = 'student'
+    WHERE usr.id = '${req?.params?.id || id}'
+    GROUP BY usr.id, ttr.profile_picture, stu.profile_picture, ttr.type, ttr.institute_name, ttr.institute_contact_name
+    LIMIT 1;
     `;
 
   return await UserModel.sequelize.query(query, {
@@ -317,7 +318,7 @@ const update = async (req, id) => {
       country_code: req.body?.country_code?.replace(/\s/g, ""),
       role: req.body?.role,
       profile_picture: req.body?.profile_picture,
-      dob: req.body?.dob,
+      dob: req.body?.dob ?? null,
       is_aadhaar_verified: req.body?.is_aadhaar_verified,
       is_email_verified: req.body?.is_email_verified,
       father_name: req.body?.father_name,

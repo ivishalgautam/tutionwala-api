@@ -74,6 +74,25 @@ const getByTutorAndStudentId = async (tutor_id, student_id) => {
   });
 };
 
+const getChatUsers = async (id) => {
+  let query = `
+  SELECT
+      stu.user_id as student_user_id,
+      tut.user_id as tutor_user_id
+    FROM ${constants.models.TUTOR_STUDENT_MAP_TABLE} tsm
+    LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = tsm.student_id
+    LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = tsm.tutor_id
+    WHERE tsm.id = :id
+  `;
+
+  return await TutorStudentMapModel.sequelize.query(query, {
+    replacements: { id },
+    type: QueryTypes.SELECT,
+    raw: true,
+    plain: true,
+  });
+};
+
 const get = async (req) => {
   const { role, id } = req.user_data;
   const whereConditions = [];
@@ -189,4 +208,5 @@ export default {
   deleteById: deleteById,
   get: get,
   getByTutorAndStudentId: getByTutorAndStudentId,
+  getChatUsers: getChatUsers,
 };

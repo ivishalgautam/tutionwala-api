@@ -67,8 +67,8 @@ const constants = {
     SALT_ROUNDS: 10,
   },
   time: {
-    TOKEN_EXPIRES_IN: 1000 * 60 * 60 * 24 * 30, // 15 * 1 minute = 15 minutes
-    REFRESH_TOKEN_EXPIRES_IN: "30d", // 1 day
+    TOKEN_EXPIRES_IN: 1000 * 60 * 60 * 24 * 30,
+    REFRESH_TOKEN_EXPIRES_IN: "90d", // 1 day
   },
   mime: {
     imageMime: ["jpeg", "jpg", "png", "gif", "webp"],
@@ -83,6 +83,7 @@ const constants = {
       "vnd.openxmlformats-officedocument.wordprocessingml.document",
     ],
   },
+  onlineUsers: new Map(),
 };
 
 export default constants;

@@ -7,7 +7,6 @@ import { ErrorHandler } from "../../helpers/handleError.js";
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FOUND } = constants.http.status;
 
 const create = async (req, res) => {
-  console.log("create followup", req.body);
   const student = await table.StudentModel.getById(0, req.body.student_id);
 
   if (!student)

@@ -21,14 +21,19 @@ const fetchChats = async (req, res) => {
   const record = await table.TutorStudentMapModel.getById(req);
   if (!record) return ErrorHandler({ code: 404, message: "Chat not found!" });
 
+  await table.NotificationModel.deleteByChatId(req);
+
   res.send({
     status: true,
     data: await table.TutorStudentChatModel.getByMapId(req),
   });
 };
 
+const onlineUsers = new Map();
 const tutorStudentChat = async (fastify, connection, req, res) => {
   console.log("Client connected");
+  const chatId = req.params.id;
+  const userId = req.user_data.id;
   const record = await table.TutorStudentMapModel.getById(req);
   if (!record)
     return res.code(404).send({ message: "Chats not exist!", status: false });
@@ -47,7 +52,6 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
 
   connection.socket.on("message", async (message) => {
     const { content } = JSON.parse(message);
-    console.log({ content });
     req.body = {};
     req.body.content = content;
     req.body.tutor_student_map_id = req.params.id;
@@ -61,6 +65,29 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
     };
 
     broadcast(newMessage, connection.socket);
+
+    const getReceiverId = async (chatId, senderId) => {
+      const chat = await table.TutorStudentMapModel.getChatUsers(chatId);
+      if (!chat) return null;
+
+      return chat.tutor_user_id === senderId
+        ? chat.student_user_id
+        : chat.tutor_user_id;
+    };
+
+    const receiverId = await getReceiverId(chatId, userId);
+    if (!onlineUsers.has(receiverId)) {
+      await sendNotification(receiverId, content);
+    }
+
+    async function sendNotification(userId, message) {
+      req.body.user_id = userId;
+      req.body.message = message;
+      req.body.chat_id = chatId;
+      req.body.type = "chat";
+
+      await table.NotificationModel.create(req);
+    }
   });
 
   connection.socket.on("close", () => {
