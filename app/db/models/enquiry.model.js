@@ -64,21 +64,25 @@ const init = async (sequelize) => {
 };
 
 const create = async (req) => {
-  return await EnquiryModel.create({
+  const data = await EnquiryModel.create({
     tutor_id: req.body.tutor_id,
     student_id: req.body.student_id,
     sub_category_id: req.body.sub_category_id,
   });
+  return data.dataValues;
 };
 
 const get = async (req) => {
   const { role, id } = req.user_data;
+  const queryParams = {};
   let whereQuery = "";
   if (role === "tutor") {
-    whereQuery = `WHERE tutusr.id = '${id}'`;
+    whereQuery = `WHERE tutusr.id = :userId`;
+    queryParams.userId = id;
   }
   if (role === "student") {
-    whereQuery = `WHERE stuusr.id = '${id}'`;
+    whereQuery = `WHERE stuusr.id = :userId`;
+    queryParams.userId = id;
   }
 
   let query = `
@@ -102,8 +106,10 @@ const get = async (req) => {
             'fullname', tutusr.fullname,
             'profile_picture', tut.profile_picture
           )
-        ) as tutor
+        ) as tutor,
+        COUNT(nt.id)::integer as unread_chat_count
        FROM ${constants.models.ENQUIRY_TABLE} enq
+       LEFT JOIN ${constants.models.NOTIFICATION_TABLE} nt ON enq.id = nt.enquiry_id AND nt.user_id = :userId
        LEFT JOIN ${constants.models.SUB_CATEGORY_TABLE} sbcat ON sbcat.id = enq.sub_category_id 
        LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = enq.tutor_id 
        LEFT JOIN ${constants.models.USER_TABLE} tutusr ON tutusr.id = tut.user_id 
@@ -114,6 +120,7 @@ const get = async (req) => {
   `;
 
   return await EnquiryModel.sequelize.query(query, {
+    replacements: { ...queryParams },
     type: QueryTypes.SELECT,
     raw: true,
   });
@@ -181,10 +188,14 @@ const getEnquiryUsers = async (enquiryId) => {
   let query = `
   SELECT
       stu.user_id as student_user_id,
-      tut.user_id as tutor_user_id
+      tut.user_id as tutor_user_id,
+      tusr.fullname as tutor_name, susr.fullname as student_name,
+      tusr.email as tutor_email, susr.email as student_email
     FROM ${constants.models.ENQUIRY_TABLE} enq
     LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = enq.student_id
     LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = enq.tutor_id
+    LEFT JOIN ${constants.models.USER_TABLE} tusr ON tusr.id = tut.user_id
+    LEFT JOIN ${constants.models.USER_TABLE} susr ON susr.id = stu.user_id
     WHERE enq.id = :enquiryId
   `;
 

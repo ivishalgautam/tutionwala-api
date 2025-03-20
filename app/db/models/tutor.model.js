@@ -86,6 +86,7 @@ const init = async (sequelize) => {
       },
       enquiry_radius: {
         type: DataTypes.INTEGER, // in km
+        defaultValue: 0,
       },
       preference: {
         type: DataTypes.ENUM({
@@ -151,7 +152,7 @@ const create = async (req) => {
     user_id: req.body.user_id,
     intro_video: req.body.intro_video,
     coords: req.body.coords,
-    enquiry_radius: req.body.enquiry_radius,
+    enquiry_radius: req.body.enquiry_radius || 0,
     degree: req.body.degree,
     preference: req.body.preference,
     availability: req.body.availability,

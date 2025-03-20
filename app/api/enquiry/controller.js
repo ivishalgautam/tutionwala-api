@@ -3,6 +3,23 @@ import table from "../../db/models.js";
 import { sequelize } from "../../db/postgres.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import { haversine } from "../../helpers/haversine.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+import ejs from "ejs";
+import { sendMail } from "../../helpers/mailer.js";
+
+const notificationTemplatePath = path.join(
+  fileURLToPath(import.meta.url),
+  "..",
+  "..",
+  "..",
+  "..",
+  "views",
+  "notification.ejs"
+);
+
+const notificationTemplate = fs.readFileSync(notificationTemplatePath, "utf-8");
 
 const create = async (req, res) => {
   const mode = req.query.mode || null;
@@ -48,6 +65,25 @@ const create = async (req, res) => {
     return ErrorHandler({ code: 400, message: "Tutor not found!" });
   }
 
+  if (subCategory) {
+    const tutorCourse = await table.TutorCourseModel.getByCourseId(
+      subCategory.id
+    );
+    if (!tutorCourse)
+      return ErrorHandler({
+        code: 404,
+        message: "Tutor not teach this course!",
+      });
+    const isModeAvailable = tutorCourse.budgets.some(
+      (item) => item.mode === mode
+    );
+    if (!isModeAvailable)
+      return ErrorHandler({
+        code: 404,
+        message: `Tutor not teach this course ${mode}!`,
+      });
+  }
+
   const enquiry = await table.EnquiryModel.getByStudentAndTutorAndSubCategory(
     tutor.id,
     student.id,
@@ -58,7 +94,7 @@ const create = async (req, res) => {
     return ErrorHandler({ code: 400, message: "Already enquired!" });
   }
 
-  await table.EnquiryModel.create({
+  const newEnq = await table.EnquiryModel.create({
     body: {
       student_id: student.id,
       tutor_id: tutor.id,
@@ -66,10 +102,29 @@ const create = async (req, res) => {
     },
   });
 
+  const newReq = { ...req, body: {} };
+  if (newEnq) {
+    newReq.body.user_id = tutor.user_id;
+    newReq.body.message = `You have a new enquiry from ${req.user_data.fullname}`;
+    newReq.body.type = "enquiry";
+    newReq.body.enquiry_id = newEnq.id;
+
+    await table.NotificationModel.create(newReq);
+
+    // mail
+    const notificationSend = ejs.render(notificationTemplate, {
+      fullname: tutor.user.fullname,
+      content: `New enquiry from ${req.user_data.fullname}`,
+    });
+
+    tutor.user.email && (await sendMail(notificationSend, tutor.user.email));
+  }
+
   res.send({ status: true, message: "Enquiry sent." });
 };
 
 const get = async (req, res) => {
+  await table.NotificationModel.deleteByEnquiry(req);
   res.send({ status: true, data: await table.EnquiryModel.get(req) });
 };
 
@@ -174,16 +229,25 @@ const enquiryChat = async (fastify, connection, req, res) => {
 
     broadcast(newMessage, connection.socket);
 
-    const getReceiverId = async (enquiryId, senderId) => {
+    const getReceiverDetails = async (enquiryId, senderId) => {
       const enquiry = await table.EnquiryModel.getEnquiryUsers(enquiryId);
       if (!enquiry) return null;
 
       return enquiry.tutor_user_id === senderId
-        ? enquiry.student_user_id
-        : enquiry.tutor_user_id;
+        ? {
+            receiverId: enquiry.student_user_id,
+            receiverFullname: enquiry.student_name,
+            receiverEmail: enquiry.student_email,
+          }
+        : {
+            receiverId: enquiry.tutor_user_id,
+            receiverFullname: enquiry.tutor_name,
+            receiverEmail: enquiry.tutor_email,
+          };
     };
 
-    const receiverId = await getReceiverId(enquiryId, userId);
+    const { receiverId, receiverFullname, receiverEmail } =
+      await getReceiverDetails(enquiryId, userId);
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
     }
@@ -192,9 +256,17 @@ const enquiryChat = async (fastify, connection, req, res) => {
       req.body.user_id = userId;
       req.body.message = message;
       req.body.enquiry_id = enquiryId;
-      req.body.type = "enquiry";
+      req.body.type = "enquiry_chat";
 
       await table.NotificationModel.create(req);
+
+      // mail
+      const notificationSend = ejs.render(notificationTemplate, {
+        fullname: receiverFullname,
+        content: `New enquiry chat message ${message} from ${receiverFullname}`,
+      });
+
+      receiverEmail && (await sendMail(notificationSend, receiverEmail));
     }
   });
 

@@ -5,6 +5,10 @@ import otpController from "../otp/controller.js";
 import { schema } from "./schema.js";
 
 export default async function routes(fastify, options) {
+  fastify.addHook("preHandler", async (request, reply) => {
+    request.body && console.log("body", request.body);
+  });
+
   fastify.post(
     "/login",
     { schema: schema.login },

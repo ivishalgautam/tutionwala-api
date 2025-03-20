@@ -83,10 +83,18 @@ const create = async (req) => {
 };
 
 const getById = async (req, id) => {
-  console.log(req.params.id, id);
   return await TutorCourseModel.findOne({
     where: {
       id: req?.params?.id || id,
+    },
+    raw: true,
+  });
+};
+
+const getByCourseId = async (courseId) => {
+  return await TutorCourseModel.findOne({
+    where: {
+      course_id: courseId,
     },
     raw: true,
   });
@@ -170,5 +178,6 @@ export default {
   findFirstUserCourse: findFirstUserCourse,
   findByTutorAndCourseId: findByTutorAndCourseId,
   getById: getById,
+  getByCourseId: getByCourseId,
   deleteById: deleteById,
 };

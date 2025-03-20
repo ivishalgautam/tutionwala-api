@@ -64,6 +64,19 @@ const getById = async (req, id) => {
   });
 };
 
+const getDetailsById = async (req, id) => {
+  let query = `
+  
+  `;
+
+  return await TutorStudentMapModel.findOne({
+    where: {
+      id: req?.params?.id || id,
+    },
+    raw: true,
+  });
+};
+
 const getByTutorAndStudentId = async (tutor_id, student_id) => {
   return await TutorStudentMapModel.findOne({
     where: {
@@ -78,10 +91,14 @@ const getChatUsers = async (id) => {
   let query = `
   SELECT
       stu.user_id as student_user_id,
-      tut.user_id as tutor_user_id
+      tut.user_id as tutor_user_id,
+      tusr.fullname as tutor_name, susr.fullname as student_name,
+      tusr.email as tutor_email, susr.email as student_email
     FROM ${constants.models.TUTOR_STUDENT_MAP_TABLE} tsm
     LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = tsm.student_id
     LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = tsm.tutor_id
+    LEFT JOIN ${constants.models.USER_TABLE} tusr ON tusr.id = tut.user_id
+    LEFT JOIN ${constants.models.USER_TABLE} susr ON susr.id = stu.user_id
     WHERE tsm.id = :id
   `;
 
@@ -145,13 +162,16 @@ const get = async (req) => {
 
   let query = `
   SELECT
-      ${selectFields}
+      ${selectFields},
+      COUNT(nt.id)::integer as unread_chat_count
     FROM ${constants.models.TUTOR_STUDENT_MAP_TABLE} tsm
+    LEFT JOIN ${constants.models.NOTIFICATION_TABLE} nt ON nt.chat_id = tsm.id AND nt.user_id = :userId
     LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = tsm.student_id
     LEFT JOIN ${constants.models.USER_TABLE} usrstu ON usrstu.id = stu.user_id
     LEFT JOIN ${constants.models.TUTOR_TABLE} tr ON tr.id = tsm.tutor_id
     LEFT JOIN ${constants.models.USER_TABLE} usrtr ON usrtr.id = tr.user_id
     ${whereQuery}
+    GROUP BY tsm.id, stu.id, usrstu.fullname, tr.id, usrtr.fullname
     LIMIT :limit OFFSET :offset
   `;
 

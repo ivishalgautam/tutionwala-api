@@ -1,6 +1,11 @@
 "use strict";
 import table from "../../db/models.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+import ejs from "ejs";
+import { sendMail } from "../../helpers/mailer.js";
 
 const get = async (req, res) => {
   const data = await table.TutorStudentMapModel.get(req);
@@ -66,16 +71,25 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
 
     broadcast(newMessage, connection.socket);
 
-    const getReceiverId = async (chatId, senderId) => {
+    const getReceiverDetails = async (chatId, senderId) => {
       const chat = await table.TutorStudentMapModel.getChatUsers(chatId);
       if (!chat) return null;
 
       return chat.tutor_user_id === senderId
-        ? chat.student_user_id
-        : chat.tutor_user_id;
+        ? {
+            receiverId: chat.student_user_id,
+            receiverFullname: chat.student_name,
+            receiverEmail: chat.student_email,
+          }
+        : {
+            receiverId: chat.tutor_user_id,
+            receiverFullname: chat.tutor_name,
+            receiverEmail: chat.tutor_email,
+          };
     };
 
-    const receiverId = await getReceiverId(chatId, userId);
+    const { receiverId, receiverFullname, receiverEmail } =
+      await getReceiverDetails(chatId, userId);
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
     }
@@ -87,6 +101,26 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
       req.body.type = "chat";
 
       await table.NotificationModel.create(req);
+
+      const notificationTemplatePath = path.join(
+        fileURLToPath(import.meta.url),
+        "..",
+        "..",
+        "..",
+        "..",
+        "views",
+        "notification.ejs"
+      );
+
+      const notificationTemplate = fs.readFileSync(
+        notificationTemplatePath,
+        "utf-8"
+      );
+      const notificationSend = ejs.render(notificationTemplate, {
+        fullname: receiverFullname,
+        content: `New chat message ${message} from ${receiverFullname}.`,
+      });
+      receiverEmail && (await sendMail(notificationSend, receiverEmail));
     }
   });
 

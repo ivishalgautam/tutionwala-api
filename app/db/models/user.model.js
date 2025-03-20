@@ -173,8 +173,25 @@ const get = async (req) => {
   }
 
   if (roles?.length) {
-    whereConditions.push(`usr.role = any(:roles)`);
-    queryParams.roles = `{${roles.join(",")}}`;
+    const isOnlyTutor = roles.length === 1 && roles[0] === "tutor";
+    const hasInstitute = roles.includes("institute");
+    const filteredRoles = roles.filter((role) => role !== "institute");
+
+    if (isOnlyTutor) {
+      whereConditions.push(`usr.role = 'tutor' AND ttr.type = 'individual'`);
+    } else if (hasInstitute && roles.length === 1) {
+      whereConditions.push("ttr.type = 'institute'");
+    } else if (hasInstitute) {
+      whereConditions.push(
+        "(usr.role = any(:roles) OR ttr.type IN ('institute', 'individual'))"
+      );
+    } else {
+      whereConditions.push("usr.role = any(:roles)");
+    }
+
+    if (filteredRoles.length) {
+      queryParams.roles = `{${filteredRoles.join(",")}}`;
+    }
   }
 
   const page = req.query.page ? Number(req.query.page) : 1;
@@ -185,10 +202,10 @@ const get = async (req) => {
   if (whereConditions.length) {
     whereClause = `WHERE ${whereConditions.join(" AND ")}`;
   }
-
   const query = `
   SELECT 
-    usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, usr.is_active, usr.is_verified, usr.created_at, usr.is_aadhaar_verified,
+    usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, 
+    usr.is_active, usr.is_verified, usr.created_at, usr.is_aadhaar_verified,
     ttr.id as tutor_id,
     COUNT(usr.id) OVER()::integer as total
   FROM ${constants.models.USER_TABLE} usr

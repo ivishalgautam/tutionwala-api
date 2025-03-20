@@ -28,8 +28,6 @@ const create = async (req, res) => {
     otp,
   });
 
-  console.log(resp.state);
-
   const otpTemplatePath = path.join(
     fileURLToPath(import.meta.url),
     "..",

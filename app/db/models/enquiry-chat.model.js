@@ -92,6 +92,8 @@ const getById = async (req, id) => {
 };
 
 const getByEnquiryId = async (req, id) => {
+  const { role } = req.user_data;
+
   let query = `
    SELECT 
         c.id, c.content, is_deleted,
@@ -104,7 +106,21 @@ const getByEnquiryId = async (req, id) => {
     WHERE c.enquiry_id = :enquiry_id;
 `;
 
-  return await EnquiryChatModel.sequelize.query(query, {
+  let selectQuery =
+    role === "tutor" ? `stuusr.fullname as name` : `tutusr.fullname as name`;
+
+  let detailsQuery = `
+SELECT
+    ${selectQuery}
+  FROM ${constants.models.ENQUIRY_TABLE} enq
+  LEFT JOIN ${constants.models.STUDENT_TABLE} stu ON stu.id = enq.student_id
+  LEFT JOIN ${constants.models.TUTOR_TABLE} tut ON tut.id = enq.tutor_id
+  LEFT JOIN ${constants.models.USER_TABLE} stuusr ON stuusr.id = stu.user_id
+  LEFT JOIN ${constants.models.USER_TABLE} tutusr ON tutusr.id = tut.user_id
+  WHERE enq.id = :enquiry_id
+`;
+
+  const chats = await EnquiryChatModel.sequelize.query(query, {
     type: QueryTypes.SELECT,
     replacements: {
       currUserId: req.user_data.id,
@@ -112,6 +128,17 @@ const getByEnquiryId = async (req, id) => {
     },
     raw: true,
   });
+
+  const details = await EnquiryChatModel.sequelize.query(detailsQuery, {
+    type: QueryTypes.SELECT,
+    replacements: {
+      enquiry_id: req.params.id || id,
+    },
+    raw: true,
+    plain: true,
+  });
+
+  return { chats, name: details?.name ?? "" };
 };
 
 const deleteById = async (req, id) => {

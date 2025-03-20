@@ -14,6 +14,7 @@ const init = async (sequelize) => {
     user_id: {
       type: DataTypes.UUID,
       allowNull: false,
+      onDelete: "CASCADE",
       references: {
         model: constants.models.USER_TABLE,
         key: "id",
@@ -48,7 +49,7 @@ const init = async (sequelize) => {
       defaultValue: false,
     },
     type: {
-      type: DataTypes.ENUM(["enquiry", "chat", ""]),
+      type: DataTypes.ENUM(["enquiry", "chat", "enquiry_chat", ""]),
       defaultValue: "",
     },
   });
@@ -95,6 +96,12 @@ const deleteByChatId = async (req, id) => {
   });
 };
 
+const deleteByEnquiry = async (req, id) => {
+  return await NotificationModel.destroy({
+    where: { user_id: req.user_data.id, type: "enquiry" },
+  });
+};
+
 export default {
   init: init,
   create: create,
@@ -102,4 +109,5 @@ export default {
   getByUserId: getByUserId,
   deleteByEnquiryId: deleteByEnquiryId,
   deleteByChatId: deleteByChatId,
+  deleteByEnquiry: deleteByEnquiry,
 };
