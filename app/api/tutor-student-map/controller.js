@@ -118,9 +118,10 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
       );
       const notificationSend = ejs.render(notificationTemplate, {
         fullname: receiverFullname,
-        content: `New chat message ${message} from ${receiverFullname}.`,
+        content: `New chat message from ${receiverFullname}.`,
       });
-      receiverEmail && (await sendMail(notificationSend, receiverEmail));
+      receiverEmail &&
+        (await sendMail(notificationSend, receiverEmail, "Tutionwala Chat"));
     }
   });
 

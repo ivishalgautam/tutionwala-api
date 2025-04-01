@@ -1,17 +1,18 @@
-<!-- views/credential_template.ejs -->
-<html>
+<!-- views/otp.ejs -->
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tutionwala OTP</title>
-    <style type="text/css">
-      /* Your CSS styles */
+    <style>
       body {
         display: flex;
         justify-content: center;
         align-items: center;
         background: #efefef;
         padding: 20px 0;
+        font-family: Arial, sans-serif;
       }
       .mytemplate {
         border: 1px solid #efefef;
@@ -20,55 +21,79 @@
         border-radius: 8px;
         background: white;
         overflow: hidden;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .logo {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 0;
+      }
+      .logo img {
+        width: 110px;
+        margin: 0 auto;
       }
       .template-title {
         background: #092143;
-        padding: 20px 0;
-      }
-      .template-title img {
-        width: 70px;
-      }
-      .template-title h2 {
-        font-family: arial;
-        font-weight: bold;
-        color: white;
+        padding: 20px;
         text-align: center;
       }
-      p,
-      li {
+      .template-title h2 {
+        color: white;
+        font-weight: bold;
+        margin: 0;
+      }
+      .template-content {
+        padding: 20px;
         font-size: 16px;
+        color: #333;
+        text-align: center;
+      }
+      .otp-box {
+        display: inline-block;
+        font-size: 22px;
+        font-weight: bold;
+        background: #f3f3f3;
+        padding: 10px 20px;
+        border-radius: 5px;
+        margin-top: 10px;
+        letter-spacing: 5px;
+      }
+      .footer {
+        background: #092143;
+        padding: 20px;
+        text-align: center;
+      }
+      .footer p {
+        color: white;
+        margin: 0;
       }
     </style>
   </head>
   <body>
     <div class="mytemplate">
-      <div
-        class="logo"
-        style="
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        "
-      >
+      <div class="logo">
         <img
           src="https://tutionwala.com/_next/image?url=%2Fimages%2Flogo.jpeg&w=256&q=75"
-          style="margin: 10px auto; width: 110px; margin-top: 20px"
+          alt="Tutionwala Logo"
         />
       </div>
-      <div class="template-title" style="width: 100%">
-        <h2 style="color: #fff">OTP for tutionwala.com</h2>
+      <div class="template-title">
+        <h2>OTP for Tutionwala</h2>
       </div>
-      <div class="template-content" style="padding: 20px">
+      <div class="template-content">
         <p>Dear <%= fullname %>,</p>
-        <p>Greetings!</p>
-        <!-- Remaining HTML content... -->
-        <p><strong>OTP:</strong> <%= otp %></p>
-        <!-- Remaining HTML content... -->
+        <p>Use the following OTP to verify your account:</p>
+        <div class="otp-box"><%= otp %></div>
+        <p>
+          This OTP is valid for a limited time. Do not share it with anyone.
+        </p>
       </div>
-      <div class="footer" style="background: #092143; padding: 20px">
-        <p style="color: white; text-align: center">
-          &copy; Copyright and All Right Reserved By Tutionwala.com
+      <div class="footer">
+        <p>
+          &copy; <%= new Date().getFullYear() %> Tutionwala.com. All Rights
+          Reserved.
         </p>
       </div>
     </div>

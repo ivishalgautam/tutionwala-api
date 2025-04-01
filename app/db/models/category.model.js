@@ -110,7 +110,8 @@ const getInTabularForm = async (req) => {
           json_build_object(
             'id', subcat.id,
             'name', subcat.name,
-            'slug', subcat.slug
+            'slug', subcat.slug,
+            'image', subcat.image
           )
         ) FILTER (WHERE subcat.id IS NOT NULL), '[]'
       ) as sub_categories

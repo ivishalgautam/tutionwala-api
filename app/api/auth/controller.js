@@ -80,23 +80,6 @@ const otpSend = async (req, res) => {
       otp,
       // country_code: record?.country_code,
     });
-
-    const otpTemplatePath = path.join(
-      fileURLToPath(import.meta.url),
-      "..",
-      "..",
-      "..",
-      "..",
-      "views",
-      "otp.ejs"
-    );
-
-    const otpTemplate = fs.readFileSync(otpTemplatePath, "utf-8");
-    const otpSend = ejs.render(otpTemplate, {
-      fullname: `${record.fullname ?? ""}`,
-      otp: otp,
-    });
-    await sendMail(otpSend, record.email);
   }
 
   return res.send({ status: true, message: "Otp sent." });

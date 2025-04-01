@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import config from "../config/index.js";
 
-export const sendMail = async (template, mailTo) => {
+export const sendMail = async (template, mailTo, subject = "Tutionwala") => {
   // Create a transporter object using SMTP transport
   const transporter = nodemailer.createTransport({
     host: config.smtp_host,
@@ -17,7 +17,7 @@ export const sendMail = async (template, mailTo) => {
   const mailOptions = {
     from: config.smtp_from_email, // Sender address
     to: mailTo, // List of receivers
-    subject: "Tutionwala", // Subject line
+    subject: subject, // Subject line
     html: template, // Rendered email template
   };
 

@@ -28,23 +28,6 @@ const create = async (req, res) => {
     otp,
   });
 
-  const otpTemplatePath = path.join(
-    fileURLToPath(import.meta.url),
-    "..",
-    "..",
-    "..",
-    "..",
-    "views",
-    "otp.ejs"
-  );
-
-  const otpTemplate = fs.readFileSync(otpTemplatePath, "utf-8");
-  const otpSend = ejs.render(otpTemplate, {
-    fullname: `${req?.body?.fullname ?? ""}`,
-    otp: otp,
-  });
-  req.body.email && (await sendMail(otpSend, req?.body?.email));
-
   if (resp.state === "SUBMIT_ACCEPTED") {
     if (record) {
       await table.OtpModel.update(req);
@@ -97,6 +80,23 @@ const verify = async (req, res) => {
   const user = await table.UserModel.getById(0, newUser.id);
   const [jwtToken, expiresIn] = authToken.generateAccessToken(user);
   const refreshToken = authToken.generateRefreshToken(user);
+
+  const welcomeTemplatePath = path.join(
+    fileURLToPath(import.meta.url),
+    "..",
+    "..",
+    "..",
+    "..",
+    "views",
+    "welcome.ejs"
+  );
+
+  const welcomeTemplate = fs.readFileSync(welcomeTemplatePath, "utf-8");
+  const welcomeSend = ejs.render(welcomeTemplate, {
+    username: `${req?.body?.fullname ?? ""}`,
+  });
+  req.body.email &&
+    (await sendMail(welcomeSend, req?.body?.email, "Welcome to Tutionwala! "));
 
   return res.send({
     status: true,

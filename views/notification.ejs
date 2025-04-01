@@ -1,17 +1,18 @@
 <!-- views/credential_template.ejs -->
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title></title>
-    <style type="text/css">
-      /* Your CSS styles */
+    <title>New Notification - Tutionwala</title>
+    <style>
       body {
         display: flex;
         justify-content: center;
         align-items: center;
         background: #efefef;
         padding: 20px 0;
+        font-family: Arial, sans-serif;
       }
       .mytemplate {
         border: 1px solid #efefef;
@@ -20,60 +21,68 @@
         border-radius: 8px;
         background: white;
         overflow: hidden;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .logo {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 0;
+      }
+      .logo img {
+        width: 110px;
       }
       .template-title {
         background: #092143;
         padding: 20px 0;
-      }
-      .template-title img {
-        width: 70px;
-      }
-      .template-title h2 {
-        font-family: arial;
-        font-weight: bold;
-        color: white;
         text-align: center;
       }
-      p,
-      li {
+      .template-title h2 {
+        color: white;
+        font-weight: bold;
+        margin: 0;
+      }
+      .template-content {
+        padding: 20px;
         font-size: 16px;
+        color: #333;
+      }
+      .template-content p {
+        margin: 10px 0;
+      }
+      .footer {
+        background: #092143;
+        padding: 20px;
+        text-align: center;
+      }
+      .footer p {
+        color: white;
+        margin: 0;
       }
     </style>
   </head>
   <body>
     <div class="mytemplate">
-      <div
-        class="logo"
-        style="
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        "
-      >
+      <div class="logo">
         <img
           src="https://tutionwala.com/_next/image?url=%2Fimages%2Flogo.jpeg&w=640&q=75"
-          style="margin: 10px auto; width: 110px; margin-top: 20px"
+          alt="Tutionwala Logo"
         />
       </div>
-      <div class="template-title" style="width: 100%">
-        <h2 style="color: #f4a51c">New notification</h2>
+      <div class="template-title">
+        <h2>New Notification</h2>
       </div>
-      <div class="template-content" style="padding: 20px">
+      <div class="template-content">
         <p>Dear <%= fullname %>,</p>
         <p>Greetings!</p>
-        <p></p>
-        <!-- Remaining HTML content... -->
-        <p>
-          You have a new notification: <br />
-          <br />
-          <%= content %>
-        </p>
-        <!-- Remaining HTML content... -->
+        <p>You have a new notification:</p>
+        <p><strong><%= content %></strong></p>
       </div>
-      <div class="footer" style="background: #092143; padding: 20px">
-        <p style="color: white; text-align: center">
-          &copy; Copyright and All Right Reserved By Onlineparts.shop
+      <div class="footer">
+        <p>
+          &copy; <%= new Date().getFullYear() %> Tutionwala.com. All Rights
+          Reserved.
         </p>
       </div>
     </div>

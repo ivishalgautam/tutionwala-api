@@ -117,7 +117,14 @@ const create = async (req, res) => {
       content: `New enquiry from ${req.user_data.fullname}`,
     });
 
-    tutor.user.email && (await sendMail(notificationSend, tutor.user.email));
+    tutor.user.email &&
+      (await sendMail(
+        notificationSend,
+        tutor.user.email,
+        subCategory
+          ? `Tutionwala new Enquiry for ${subCategory.name}`
+          : "Tutionwala new Enquiry"
+      ));
   }
 
   res.send({ status: true, message: "Enquiry sent." });
@@ -263,10 +270,15 @@ const enquiryChat = async (fastify, connection, req, res) => {
       // mail
       const notificationSend = ejs.render(notificationTemplate, {
         fullname: receiverFullname,
-        content: `New enquiry chat message ${message} from ${receiverFullname}`,
+        content: `New enquiry chat message from ${receiverFullname}`,
       });
 
-      receiverEmail && (await sendMail(notificationSend, receiverEmail));
+      receiverEmail &&
+        (await sendMail(
+          notificationSend,
+          receiverEmail,
+          "Tutionwala Enquiry Chat"
+        ));
     }
   });
 

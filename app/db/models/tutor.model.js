@@ -185,7 +185,11 @@ const getCourses = async (req) => {
 };
 
 const get = async (req, id) => {
-  let whereConditions = ["tr.is_profile_completed = true"];
+  let whereConditions = [
+    "tr.is_profile_completed IS true",
+    "usr.is_email_verified IS true",
+    "usr.is_aadhaar_verified IS true",
+  ];
   const queryParams = {};
 
   const category = req.query.category ? req.query.category?.split(" ") : [];
@@ -387,7 +391,7 @@ const get = async (req, id) => {
 
 const getFilteredTutors = async (req) => {
   let queryParams = {};
-  let whereQuery = `WHERE tr.is_profile_completed IS true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)`;
+  let whereQuery = `WHERE tr.is_profile_completed IS true AND usr.is_email_verified IS true AND usr.is_aadhaar_verified IS true AND trcrs.tutor_id IS NOT NULL AND  (subcat.slug = '${req.body.subCatSlug}' OR subcat.slug IS NULL)`;
   const lat = req.body.lat ? Number(req.body.lat) : null;
   const lng = req.body.lng ? Number(req.body.lng) : null;
   const preference = req.body.preference ? req.body.preference : null;

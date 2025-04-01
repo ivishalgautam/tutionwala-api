@@ -113,18 +113,28 @@ const get = async (req) => {
   }
 
   let query = `
-  SELECT
-      DISTINCT sbcat.id, sbcat.name, sbcat.image, sbcat.slug, sbcat.is_boards, sbcat.created_at,
-      cat.name as category_name,
-      COUNT(sbcat.id) OVER()::integer as total
-    FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
-    LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
-    LEFT JOIN ${constants.models.SUB_CATEGORY_BOARD_MAPPING_TABLE} sb ON sb.sub_category_id = sbcat.id
-    LEFT JOIN ${constants.models.SUBJECT_TABLE} sjt ON sjt.board_id = sb.board_id
-    ${whereClause}
-    ORDER BY sbcat.name DESC
-    LIMIT :limit OFFSET :offset
-  `;
+  SELECT sbcat.id, 
+    CASE 
+      WHEN sbcat.is_boards IS true 
+      THEN CONCAT(sbcat.name, ' ', COALESCE(MIN(LOWER(sjt.name)), ''))
+      ELSE sbcat.name
+    END AS name,
+    sbcat.image, 
+    sbcat.slug, 
+    sbcat.is_boards, 
+    sbcat.created_at,
+    cat.name AS category_name,
+    COUNT(sbcat.id) OVER()::integer AS total
+  FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
+  LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
+  LEFT JOIN ${constants.models.SUB_CATEGORY_BOARD_MAPPING_TABLE} sb 
+      ON sb.sub_category_id = sbcat.id AND sbcat.is_boards IS true
+  LEFT JOIN ${constants.models.SUBJECT_TABLE} sjt ON sjt.board_id = sb.board_id
+  ${whereClause}
+  GROUP BY sbcat.id, sbcat.name, sbcat.image, sbcat.slug, sbcat.is_boards, sbcat.created_at, cat.name
+  ORDER BY sbcat.name DESC
+  LIMIT :limit OFFSET :offset;
+`;
 
   return await SubCategoryModel.sequelize.query(query, {
     replacements: { ...queryParams, limit, offset },
