@@ -114,11 +114,7 @@ const get = async (req) => {
 
   let query = `
   SELECT sbcat.id, 
-    CASE 
-      WHEN sbcat.is_boards IS true 
-      THEN CONCAT(sbcat.name, ' ', COALESCE(MIN(LOWER(sjt.name)), ''))
-      ELSE sbcat.name
-    END AS name,
+    sbcat.name,
     sbcat.image, 
     sbcat.slug, 
     sbcat.is_boards, 

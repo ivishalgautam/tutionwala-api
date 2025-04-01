@@ -113,9 +113,8 @@ const getByCategorySlug = async (req, res) => {
     return ErrorHandler({ code: NOT_FOUND, message: "Category not found!" });
   }
 
-  const { courses, total } = await table.SubCategoryModel.getByCategorySlug(
-    req
-  );
+  const { courses, total } =
+    await table.SubCategoryModel.getByCategorySlug(req);
 
   res.send({
     status: true,
