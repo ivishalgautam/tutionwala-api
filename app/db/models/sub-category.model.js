@@ -48,6 +48,9 @@ const init = async (sequelize) => {
         type: DataTypes.JSONB, // [{ fieldName: "", questionForTutor: "", questionForStudent: "", options: [], fieldType: radio | checkboxes | text | textarea }]
         allowNull: false,
       },
+      sequence: {
+        type: DataTypes.STRING,
+      },
     },
     {
       createdAt: "created_at",
@@ -309,8 +312,7 @@ const getByCategorySlug = async (req, slug) => {
     FROM ${constants.models.SUB_CATEGORY_TABLE} sbcat
     LEFT JOIN ${constants.models.CATEGORY_TABLE} cat ON cat.id = sbcat.category_id
     ${whereClause}
-    ORDER BY CAST(NULLIF(REGEXP_REPLACE(sbcat.name, '[^0-9]', '', 'g'), '') AS INTEGER),
-    sbcat.name
+    ORDER BY sequence
     LIMIT :limit OFFSET :offset
   `;
 
