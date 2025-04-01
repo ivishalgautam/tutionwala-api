@@ -113,6 +113,8 @@ const getInTabularForm = async (req) => {
             'slug', subcat.slug,
             'image', subcat.image
           )
+          ORDER BY CAST(NULLIF(REGEXP_REPLACE(sbcat.sequence, '[^0-9]', '', 'g'), '') AS INTEGER),
+          sbcat.name
         ) FILTER (WHERE subcat.id IS NOT NULL), '[]'
       ) as sub_categories
     FROM ${constants.models.CATEGORY_TABLE} cat
