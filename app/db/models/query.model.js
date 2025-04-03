@@ -46,7 +46,7 @@ const init = async (sequelize) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM(["pending", "resolved"]),
+        type: DataTypes.ENUM(["pending", "resolved", "in progress"]),
         defaultValue: "pending",
       },
     },
@@ -119,12 +119,17 @@ const getById = async (req, id) => {
 };
 
 const update = async (req, id) => {
-  return await UserQueryModel.update(
+  const [, rows] = await UserQueryModel.update(
     { status: req.body.status },
     {
       where: { id: req.params.id || id },
+      returning: true,
+      raw: true,
+      plain: true,
     }
   );
+
+  return rows;
 };
 
 const deleteById = async (req, id) => {

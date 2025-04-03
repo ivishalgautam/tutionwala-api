@@ -47,6 +47,23 @@
         text-align: center;
         color: white;
       }
+      .status {
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 4px;
+      }
+      .pending {
+        background-color: orange;
+        color: white;
+      }
+      .resolved {
+        background-color: green;
+        color: white;
+      }
+      .in-progress {
+        background-color: blue;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -64,6 +81,12 @@
         <p>Query submitted by <%= name %></p>
         <ul>
           <li><strong>Query No:</strong> <%= query_no %></li>
+          <li>
+            <strong>Status:</strong>
+            <span class="status <%= status.toLowerCase().replace(' ', '-') %>"
+              ><%= status %></span
+            >
+          </li>
           <li><strong>Name:</strong> <%= name %></li>
           <li><strong>Email:</strong> <%= email %></li>
           <li><strong>Phone:</strong> <%= phone %></li>

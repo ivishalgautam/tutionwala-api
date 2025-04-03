@@ -33,6 +33,7 @@ const create = async (req, res) => {
     subject: req.body.subject,
     message: req.body.message,
     query_no,
+    status: data.status,
   });
   await sendMail(
     queryRaiseSend,
@@ -63,8 +64,36 @@ const update = async (req, res) => {
   if (!record)
     return ErrorHandler({ status: NOT_FOUND, message: "Query not found!" });
 
-  await table.QueryModel.update(req);
-  res.send({ status: true, message: "Query deleted." });
+  const data = await table.QueryModel.update(req);
+  const query_no = data.query_number;
+  const raiseQueryTemplatePath = path.join(
+    fileURLToPath(import.meta.url),
+    "..",
+    "..",
+    "..",
+    "..",
+    "views",
+    "query-raise.ejs"
+  );
+
+  const queryraiseTemplate = fs.readFileSync(raiseQueryTemplatePath, "utf-8");
+  const queryRaiseSend = ejs.render(queryraiseTemplate, {
+    name: data.name,
+    email: data.email,
+    address: data.address,
+    phone: data.phone,
+    subject: data.subject,
+    message: data.message,
+    status: data.status,
+    query_no,
+  });
+  await sendMail(
+    queryRaiseSend,
+    data.email,
+    `Query Raise #${query_no} | Tutionwala`
+  );
+
+  res.send({ status: true, message: "Query Updated." });
 };
 
 const deleteById = async (req, res) => {
