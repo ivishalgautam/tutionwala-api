@@ -60,7 +60,7 @@ const init = async (sequelize) => {
 };
 
 const create = async (req) => {
-  return await UserQueryModel.create({
+  const data = await UserQueryModel.create({
     query_number: generateQueryNumber(),
     name: req.body.name,
     email: req.body.email,
@@ -69,6 +69,8 @@ const create = async (req) => {
     subject: req.body.subject,
     message: req.body.message,
   });
+
+  return data.dataValues;
 };
 
 const get = async (req) => {

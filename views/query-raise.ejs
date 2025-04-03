@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raise a Query</title>
+    <style type="text/css">
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #efefef;
+        padding: 20px 0;
+      }
+      .query-template {
+        border: 1px solid #ccc;
+        width: 800px;
+        margin: 20px auto;
+        border-radius: 8px;
+        background: white;
+        overflow: hidden;
+      }
+      .template-header {
+        background: #092143;
+        padding: 20px 0;
+        text-align: center;
+      }
+      .template-header h2 {
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        color: white;
+      }
+      .template-content {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+      }
+      .template-content ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      .template-content li {
+        margin-bottom: 10px;
+      }
+      .footer {
+        background: #092143;
+        padding: 20px;
+        text-align: center;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="query-template">
+      <div class="logo" style="text-align: center; padding: 20px">
+        <img
+          src="https://tutionwala.com/_next/image?url=%2Fimages%2Flogo.jpeg&w=256&q=75"
+          style="width: 110px"
+        />
+      </div>
+      <div class="template-header">
+        <h2>Raise a Query</h2>
+      </div>
+      <div class="template-content">
+        <p>Query submitted by <%= name %></p>
+        <ul>
+          <li><strong>Query No:</strong> <%= query_no %></li>
+          <li><strong>Name:</strong> <%= name %></li>
+          <li><strong>Email:</strong> <%= email %></li>
+          <li><strong>Phone:</strong> <%= phone %></li>
+          <li><strong>Address:</strong> <%= address %></li>
+          <li><strong>Subject:</strong> <%= subject %></li>
+          <li><strong>Message:</strong> <%= message %></li>
+        </ul>
+      </div>
+      <div class="footer">
+        <p>&copy; Copyright and All Rights Reserved By Tutionwala.com</p>
+      </div>
+    </div>
+  </body>
+</html>
