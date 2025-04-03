@@ -1,7 +1,7 @@
 "use strict";
 import { generateQueryNumber } from "../../helpers/generateQueryNumber.js";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { QueryTypes } from "sequelize";
+import sequelizeFwk, { ENUM, QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let UserQueryModel = null;
@@ -44,6 +44,10 @@ const init = async (sequelize) => {
       message: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM(["pending", "resolved"]),
+        defaultValue: "pending",
       },
     },
     {
@@ -112,6 +116,15 @@ const getById = async (req, id) => {
   });
 };
 
+const update = async (req, id) => {
+  return await UserQueryModel.update(
+    { status: req.body.status },
+    {
+      where: { id: req.params.id || id },
+    }
+  );
+};
+
 const deleteById = async (req, id) => {
   return await UserQueryModel.destroy({
     where: { id: req.params.id || id },
@@ -123,5 +136,6 @@ export default {
   create: create,
   get: get,
   getById: getById,
+  update: update,
   deleteById: deleteById,
 };

@@ -24,6 +24,16 @@ const get = async (req, res) => {
   res.send({ status: true, data, total: data?.[0]?.total });
 };
 
+const update = async (req, res) => {
+  const record = await table.QueryModel.getById(req);
+
+  if (!record)
+    return ErrorHandler({ status: NOT_FOUND, message: "Query not found!" });
+
+  await table.QueryModel.update(req);
+  res.send({ status: true, message: "Query deleted." });
+};
+
 const deleteById = async (req, res) => {
   const record = await table.QueryModel.getById(req, req.params.id);
 
@@ -38,5 +48,6 @@ export default {
   create: create,
   get: get,
   deleteById: deleteById,
+  update: update,
   getById: getById,
 };

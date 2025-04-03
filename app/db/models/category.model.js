@@ -30,6 +30,9 @@ const init = async (sequelize) => {
       meta_title: { type: DataTypes.TEXT, defaultValue: "" },
       meta_description: { type: DataTypes.TEXT, defaultValue: "" },
       meta_keywords: { type: DataTypes.TEXT, defaultValue: "" },
+      sequence: {
+        type: DataTypes.STRING,
+      },
     },
     {
       createdAt: "created_at",
@@ -89,7 +92,8 @@ const get = async (req) => {
     ${whereClause}
     GROUP BY
       cat.id
-    ORDER BY cat.name ASC
+    ORDER BY CAST(NULLIF(REGEXP_REPLACE(cat.sequence, '[^0-9]', '', 'g'), '') AS INTEGER),
+      cat.name
     LIMIT :limit OFFSET :offset
   `;
 
