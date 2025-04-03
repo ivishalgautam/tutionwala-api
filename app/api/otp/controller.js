@@ -3,7 +3,6 @@ import constants from "../../lib/constants/index.js";
 import table from "../../db/models.js";
 import moment from "moment";
 import crypto from "crypto";
-import { sendOtp } from "../../helpers/interaktApi.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import authToken from "../../helpers/auth.js";
 import { fileURLToPath } from "url";

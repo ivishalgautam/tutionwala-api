@@ -5,14 +5,8 @@ import hash from "../../lib/encryption/index.js";
 import table from "../../db/models.js";
 import authToken from "../../helpers/auth.js";
 import crypto from "crypto";
-import { sendOtp } from "../../helpers/interaktApi.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import moment from "moment";
-import { fileURLToPath } from "url";
-import path from "path";
-import fs from "fs";
-import ejs from "ejs";
-import { sendMail } from "../../helpers/mailer.js";
 import { sendDltOtp } from "../../helpers/dlt-otp.js";
 
 const verifyUserCredentials = async (req, res) => {

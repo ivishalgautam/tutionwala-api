@@ -27,7 +27,7 @@ const create = async (req, res) => {
     subject: req.body.subject,
     message: req.body.message,
   });
-  await sendMail(feedbackSend, config.smtp_from_email);
+  await sendMail(feedbackSend, config.smtp_from_email, "Feedback | Tutionwala");
 
   res.send({ status: true, message: "Thank you for your feedback." });
 };

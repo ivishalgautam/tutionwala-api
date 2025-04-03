@@ -1,4 +1,5 @@
 "use strict";
+import { generateQueryNumber } from "../../helpers/generateQueryNumber.js";
 import constants from "../../lib/constants/index.js";
 import sequelizeFwk, { QueryTypes } from "sequelize";
 const { DataTypes } = sequelizeFwk;
@@ -15,6 +16,10 @@ const init = async (sequelize) => {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         unique: true,
+      },
+      query_number: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       name: {
         type: DataTypes.STRING,
@@ -52,6 +57,7 @@ const init = async (sequelize) => {
 
 const create = async (req) => {
   return await UserQueryModel.create({
+    query_number: generateQueryNumber(),
     name: req.body.name,
     email: req.body.email,
     address: req.body.address,
