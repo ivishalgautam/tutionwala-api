@@ -1,6 +1,8 @@
-import crypto from "crypto";
-
 export function generateQueryNumber() {
-  const randomPart = crypto.randomBytes(4).toString("hex");
-  return randomPart;
+  const now = new Date();
+  const formattedDate = now
+    .toISOString()
+    .replace(/[-T:.Z]/g, "")
+    .slice(0, 14);
+  return formattedDate;
 }
