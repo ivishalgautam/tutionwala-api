@@ -8,6 +8,7 @@ import path from "path";
 import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
+import config from "../../config/index.js";
 
 const { NOT_FOUND } = constants.http.status;
 
@@ -38,6 +39,11 @@ const create = async (req, res) => {
   await sendMail(
     queryRaiseSend,
     data.email,
+    `Query Raise #${query_no} | Tutionwala`
+  );
+  await sendMail(
+    queryRaiseSend,
+    config.smtp_from_email,
     `Query Raise #${query_no} | Tutionwala`
   );
 
@@ -90,6 +96,11 @@ const update = async (req, res) => {
   await sendMail(
     queryRaiseSend,
     data.email,
+    `Query Raise #${query_no} | Tutionwala`
+  );
+  await sendMail(
+    queryRaiseSend,
+    config.smtp_from_email,
     `Query Raise #${query_no} | Tutionwala`
   );
 
