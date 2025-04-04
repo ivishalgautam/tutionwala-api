@@ -131,7 +131,8 @@ const get = async (req) => {
   LEFT JOIN ${constants.models.SUBJECT_TABLE} sjt ON sjt.board_id = sb.board_id
   ${whereClause}
   GROUP BY sbcat.id, sbcat.name, sbcat.image, sbcat.slug, sbcat.is_boards, sbcat.created_at, cat.name
-  ORDER BY sbcat.name DESC
+  ORDER BY CAST(NULLIF(REGEXP_REPLACE(sbcat.sequence, '[^0-9]', '', 'g'), '') AS INTEGER),
+    sbcat.name
   LIMIT :limit OFFSET :offset;
 `;
 
