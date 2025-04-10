@@ -243,6 +243,8 @@ const getUser = async (req, res) => {
   }
 
   delete req.user_data.password;
+  delete req.user_data.reset_password_token;
+  delete req.user_data.confirmation_token;
   return res.send(req.user_data);
 };
 

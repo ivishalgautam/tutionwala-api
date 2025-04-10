@@ -335,6 +335,8 @@ const get = async (req, id) => {
             'profile_picture', tr.profile_picture,
             'experience', tr.experience,
             'intro_video', tr.intro_video,
+            'type', tr.type,
+            'institute_name', tr.institute_name,
             'is_demo_class', trcrs.is_demo_class,
             'course_name', subcat.name
           )

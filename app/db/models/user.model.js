@@ -79,7 +79,6 @@ const init = async (sequelize) => {
       },
       gender: {
         type: DataTypes.ENUM({ values: ["male", "female", ""] }),
-        allowNull: false,
         defaultValue: "",
       },
       profile_picture: {
@@ -205,13 +204,22 @@ const get = async (req) => {
   const query = `
   SELECT 
     usr.id, usr.fullname, usr.mobile_number, usr.email, usr.role, 
-    usr.is_active, usr.is_verified, usr.created_at, usr.is_aadhaar_verified,
+    usr.is_active, usr.is_verified, usr.created_at, usr.is_aadhaar_verified, usr.is_email_verified,
     ttr.id as tutor_id,
-    COUNT(usr.id) OVER()::integer as total
+    COUNT(usr.id) OVER()::integer as total,
+    CASE
+      WHEN usr.role = 'student' THEN st.is_profile_completed ELSE ttr.is_profile_completed
+      END,
+    CASE
+      WHEN usr.role = 'student' THEN st.curr_step ELSE ttr.curr_step
+      END
   FROM ${constants.models.USER_TABLE} usr
   LEFT JOIN ${
     constants.models.TUTOR_TABLE
   } ttr ON ttr.user_id = usr.id AND usr.role = 'tutor'
+  LEFT JOIN ${
+    constants.models.STUDENT_TABLE
+  } st ON st.user_id = usr.id AND usr.role = 'student'
   ${whereClause}
   LIMIT :limit OFFSET :offset
   `;
