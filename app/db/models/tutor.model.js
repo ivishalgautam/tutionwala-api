@@ -517,7 +517,9 @@ const getById = async (req, id) => {
             'email', usr.email,
             'profile_picture', tr.profile_picture,
             'experience', tr.experience,
-            'intro_video', tr.intro_video
+            'intro_video', tr.intro_video,
+            'is_email_verified', usr.is_email_verified,
+            'is_aadhaar_verified', usr.is_aadhaar_verified
           )
         )::jsonb, '$[0]'
       ) as user,
