@@ -7,7 +7,7 @@ export const schema = {
         tutor_id: { type: "string", format: "uuid" },
         review: { type: "string", minLength: 3 },
       },
-      required: ["rating", "review", "tutor_id", "enquiry_id"],
+      required: ["rating", "review", "tutor_id"],
     },
   },
   checkParam: {
