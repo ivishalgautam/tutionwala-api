@@ -235,7 +235,7 @@ const get = async (req, id) => {
                jsonb_array_elements_text(brd->'subjects') AS subj
           WHERE subj = ANY(:subjects)
         )`);
-    queryParams.subjects = `{${subjects.join(",")}}`;
+    queryParams.subjects = `{${subjects.map((item) => item.split("-").join(" ")).join(",")}}`;
   }
 
   if (minAvgRating?.length) {
