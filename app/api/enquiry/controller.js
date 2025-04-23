@@ -85,15 +85,15 @@ const create = async (req, res) => {
       });
   }
 
-  const enquiry = await table.EnquiryModel.getByStudentAndTutorAndSubCategory(
-    tutor.id,
-    student.id,
-    subCategory?.id ?? null
-  );
+  // const enquiry = await table.EnquiryModel.getByStudentAndTutorAndSubCategory(
+  //   tutor.id,
+  //   student.id,
+  //   subCategory?.id ?? null
+  // );
 
-  if (enquiry) {
-    return ErrorHandler({ code: 400, message: "Already enquired!" });
-  }
+  // if (enquiry) {
+  //   return ErrorHandler({ code: 400, message: "Already enquired!" });
+  // }
 
   const newEnq = await table.EnquiryModel.create({
     body: {
