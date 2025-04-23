@@ -24,12 +24,15 @@ const create = async (req, res) => {
       .code(404)
       .message({ status: false, message: "Tutor-student mapping not found" });
 
-  const isEnquiry7DaysOld = moment(tutorStudentMap.created_at)
+  const is7DaysOld = moment(tutorStudentMap.created_at)
     .add(7, "days")
     .isSameOrBefore(moment());
 
-  if (!isEnquiry7DaysOld)
-    return ErrorHandler({ code: 400, message: "Enquiry must be 7 days old!" });
+  if (!is7DaysOld)
+    return ErrorHandler({
+      code: 400,
+      message: "You can't review before 7 days!",
+    });
 
   // const reviewExist =
   //   await table.ReviewModel.getByAndStudentAndTutor(req);
