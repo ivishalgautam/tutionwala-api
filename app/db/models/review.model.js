@@ -53,16 +53,6 @@ const init = async (sequelize) => {
           deferrable: Deferrable.INITIALLY_IMMEDIATE,
         },
       },
-      enquiry_id: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        onDelete: "CASCADE",
-        references: {
-          model: constants.models.ENQUIRY_TABLE,
-          key: "id",
-          deferrable: Deferrable.INITIALLY_IMMEDIATE,
-        },
-      },
     },
     {
       createdAt: "created_at",
@@ -79,7 +69,6 @@ const create = async (req) => {
     review: req.body.review,
     tutor_id: req.body.tutor_id,
     student_id: req.body.student_id,
-    enquiry_id: req.body.enquiry_id,
   });
 };
 
@@ -136,7 +125,7 @@ const getByStudentId = async (req, id) => {
   });
 };
 
-const getByEnquiryAndStudentAndTutor = async (req) => {
+const getByStudentAndTutor = async (req) => {
   return await ReviewModel.findOne({
     where: {
       student_id: req.body.student_id,
@@ -169,5 +158,5 @@ export default {
   getByStudentId: getByStudentId,
   getByTutorId: getByTutorId,
   deleteById: deleteById,
-  getByEnquiryAndStudentAndTutor: getByEnquiryAndStudentAndTutor,
+  getByStudentAndTutor: getByStudentAndTutor,
 };

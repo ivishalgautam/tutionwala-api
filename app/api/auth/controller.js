@@ -46,7 +46,7 @@ const otpSend = async (req, res) => {
   const record = await table.UserModel.getByMobile(req);
 
   if (!record) {
-    return ErrorHandler({ code: 404, message: "Customer not found!" });
+    return ErrorHandler({ code: 404, message: "User not found!" });
   }
   if (req.body.role && req.body.role !== record.role) {
     return ErrorHandler({ code: 404, message: "User not found!" });

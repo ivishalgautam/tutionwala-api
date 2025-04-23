@@ -1,7 +1,8 @@
 "use strict";
+import moment from "moment";
 import { generateQueryNumber } from "../../helpers/generateQueryNumber.js";
 import constants from "../../lib/constants/index.js";
-import sequelizeFwk, { ENUM, QueryTypes } from "sequelize";
+import sequelizeFwk, { ENUM, Op, QueryTypes, Sequelize } from "sequelize";
 const { DataTypes } = sequelizeFwk;
 
 let UserQueryModel = null;
@@ -77,6 +78,7 @@ const get = async (req) => {
   const whereConditions = [];
   const queryParams = {};
   const q = req.query.q ? req.query.q : null;
+  const status = req.query.status ? req.query.status.split(".") : null;
 
   if (q) {
     whereConditions.push(
@@ -84,6 +86,12 @@ const get = async (req) => {
     );
     queryParams.query = `%${q}%`;
   }
+
+  if (status?.length) {
+    whereConditions.push("qr.status = any(:status)");
+    queryParams.status = `{${status.join(",")}}`;
+  }
+
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
@@ -138,6 +146,48 @@ const deleteById = async (req, id) => {
   });
 };
 
+const countQuery = async (last_30_days = false) => {
+  let where_query;
+  if (last_30_days) {
+    where_query = {
+      created_at: {
+        [Op.gte]: moment()
+          .subtract(30, "days")
+          .format("YYYY-MM-DD HH:mm:ss.SSSZ"),
+      },
+    };
+  }
+
+  const counts = await UserQueryModel.findAll({
+    where: where_query,
+    attributes: [
+      "status",
+      [Sequelize.fn("COUNT", Sequelize.col("status")), "count"],
+    ],
+    group: ["status"],
+    raw: true,
+  });
+
+  const total = await UserQueryModel.count();
+
+  const result = {
+    pending: 0,
+    resolved: 0,
+    inProgress: 0,
+    total,
+  };
+
+  counts.forEach(({ status, count }) => {
+    if (status === "in progress") {
+      result.inProgress = parseInt(count);
+    } else {
+      result[status] = parseInt(count);
+    }
+  });
+
+  return result;
+};
+
 export default {
   init: init,
   create: create,
@@ -145,4 +195,5 @@ export default {
   getById: getById,
   update: update,
   deleteById: deleteById,
+  countQuery: countQuery,
 };

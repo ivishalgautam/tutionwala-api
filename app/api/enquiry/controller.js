@@ -66,7 +66,8 @@ const create = async (req, res) => {
   }
 
   if (subCategory) {
-    const tutorCourse = await table.TutorCourseModel.getByCourseId(
+    const tutorCourse = await table.TutorCourseModel.getByTutorCourseId(
+      tutor.id,
       subCategory.id
     );
     if (!tutorCourse)
@@ -99,6 +100,7 @@ const create = async (req, res) => {
       student_id: student.id,
       tutor_id: tutor.id,
       sub_category_id: subCategory?.id ?? null,
+      subjects: req.query?.subject ?? "",
     },
   });
 

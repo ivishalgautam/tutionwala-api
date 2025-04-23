@@ -51,10 +51,6 @@ const init = async (sequelize) => {
         type: DataTypes.INTEGER,
         defaultValue: 1,
       },
-      adhaar: {
-        type: DataTypes.TEXT,
-        defaultValue: "",
-      },
       profile_picture: {
         type: DataTypes.TEXT,
         defaultValue: "",
@@ -194,6 +190,7 @@ const get = async (req, id) => {
 
   const category = req.query.category ? req.query.category?.split(" ") : [];
   const language = req.query.language ? req.query.language?.split(" ") : [];
+  const subjects = req.query.subject ? req.query.subject?.split(" ") : [];
   const minAvgRating = req.query.rating
     ? (req.query.rating.split(" ") ?? [])
     : null;
@@ -230,6 +227,17 @@ const get = async (req, id) => {
     queryParams.language = `{${language.join(",")}}`;
   }
 
+  if (subjects.length) {
+    whereConditions.push(`
+        EXISTS (
+          SELECT 1
+          FROM jsonb_array_elements(trcrs.boards) AS brd,
+               jsonb_array_elements_text(brd->'subjects') AS subj
+          WHERE subj = ANY(:subjects)
+        )`);
+    queryParams.subjects = `{${subjects.join(",")}}`;
+  }
+
   if (minAvgRating?.length) {
     whereConditions.push(`
       COALESCE(
@@ -264,6 +272,7 @@ const get = async (req, id) => {
     whereConditions.push(`trcrs.is_demo_class = :is_demo_class`);
     queryParams.is_demo_class = isDemo;
   }
+
   if (mode) {
     whereConditions.push(`EXISTS (
         SELECT 1
@@ -272,6 +281,7 @@ const get = async (req, id) => {
       )`);
     queryParams.mode = `{${mode.join(",")}}`;
   }
+
   if (flexibility) {
     whereConditions.push(`EXISTS (
         SELECT 1
@@ -605,8 +615,6 @@ const update = async (req, id) => {
       experience: req.body.experience,
       profile_picture: req.body.profile_picture,
       intro_video: req.body.intro_video,
-
-      adhaar: req.body.adhaar,
     },
     {
       where: {

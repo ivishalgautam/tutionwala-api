@@ -13,26 +13,27 @@ const create = async (req, res) => {
     return ErrorHandler({ code: 404, message: "Student not exist!" });
   req.body.student_id = student.id;
 
-  const enquiry = await table.EnquiryModel.getById(0, req.body.enquiry_id);
-  if (!enquiry)
-    return ErrorHandler({ code: 400, message: "Enquiry not found!" });
+  const tutorStudentMap =
+    await table.TutorStudentMapModel.getByTutorAndStudentId(
+      tutor.id,
+      student.id
+    );
 
-  if (enquiry.status === "pending")
-    return ErrorHandler({ code: 400, message: "This enquiry is pending" });
+  if (!tutorStudentMap)
+    return res
+      .code(404)
+      .message({ status: false, message: "Tutor-student mapping not found" });
 
-  const isEnquiry20DaysOld = moment(enquiry.created_at)
-    .add(20, "days")
+  const isEnquiry7DaysOld = moment(tutorStudentMap.created_at)
+    .add(7, "days")
     .isSameOrBefore(moment());
-  console.log(enquiry);
-  console.log(moment(enquiry.created_at).add(20, "days"));
 
-  if (!isEnquiry20DaysOld)
-    return ErrorHandler({ code: 400, message: "Enquiry must be 20 days old!" });
+  if (!isEnquiry7DaysOld)
+    return ErrorHandler({ code: 400, message: "Enquiry must be 7 days old!" });
 
-  const reviewExist = await table.ReviewModel.getByEnquiryAndStudentAndTutor(
-    req
-  );
-  if (reviewExist) return ErrorHandler({ code: 400, message: "Review exist" });
+  // const reviewExist =
+  //   await table.ReviewModel.getByAndStudentAndTutor(req);
+  // if (reviewExist) return ErrorHandler({ code: 400, message: "Review exist" });
 
   const review = await table.ReviewModel.create(req);
   if (!review) {

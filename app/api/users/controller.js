@@ -265,7 +265,7 @@ const emailVerificationOTPSend = async (req, res) => {
   const record = await table.UserModel.getByEmailId(req);
 
   if (!record) {
-    return ErrorHandler({ code: 404, message: "Customer not found!" });
+    return ErrorHandler({ code: 404, message: "User not found!" });
   }
 
   const otp = randomInt(100000, 999999);

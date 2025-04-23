@@ -53,6 +53,10 @@ const init = async (sequelize) => {
           isIn: [["converted", "pending"]],
         },
       },
+      subjects: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+      },
     },
     {
       createdAt: "created_at",
@@ -68,6 +72,7 @@ const create = async (req) => {
     tutor_id: req.body.tutor_id,
     student_id: req.body.student_id,
     sub_category_id: req.body.sub_category_id,
+    subjects: req.body.subjects,
   });
   return data.dataValues;
 };
@@ -87,9 +92,7 @@ const get = async (req) => {
 
   let query = `
     SELECT
-        enq.id,
-        enq.created_at,
-        enq.status,
+        enq.id, enq.created_at, enq.status, enq.subjects,
         sbcat.name as sub_category_name,
         json_agg(
           json_build_object(

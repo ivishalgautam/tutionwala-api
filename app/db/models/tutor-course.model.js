@@ -100,6 +100,16 @@ const getByCourseId = async (courseId) => {
   });
 };
 
+const getByTutorCourseId = async (tutorId, courseId) => {
+  return await TutorCourseModel.findOne({
+    where: {
+      tutor_id: tutorId,
+      course_id: courseId,
+    },
+    raw: true,
+  });
+};
+
 const deleteById = async (req, id) => {
   return await TutorCourseModel.destroy({
     where: {
@@ -179,5 +189,6 @@ export default {
   findByTutorAndCourseId: findByTutorAndCourseId,
   getById: getById,
   getByCourseId: getByCourseId,
+  getByTutorCourseId: getByTutorCourseId,
   deleteById: deleteById,
 };

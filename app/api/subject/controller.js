@@ -6,10 +6,10 @@ import { ErrorHandler } from "../../helpers/handleError.js";
 const { BAD_REQUEST, NOT_FOUND } = constants.http.status;
 
 const create = async (req, res) => {
-  const board = await table.BoardModel.create(req);
+  const board = await table.SubjectModel.create(req);
 
   if (!board) {
-    return ErrorHandler({ message: "Error creating board!" });
+    return ErrorHandler({ message: "Error creating subject!" });
   }
 
   const subjects = req.body.subjects;
@@ -22,58 +22,58 @@ const create = async (req, res) => {
     await table.SubjectModel.bulkCreate(data);
   }
 
-  res.send({ status: true, message: "Board Added." });
+  res.send({ status: true, message: "Subject Added." });
 };
 
 const updateById = async (req, res) => {
-  const record = await table.BoardModel.getById(req);
+  const record = await table.SubjectModel.getById(req);
 
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Board not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Subject not found!" });
   }
 
   res.send({
     status: true,
-    data: await table.BoardModel.update(req),
+    data: await table.SubjectModel.update(req),
   });
 };
 
 const getBySlug = async (req, res) => {
-  const record = await table.BoardModel.getBySlug(req);
+  const record = await table.SubjectModel.getBySlug(req);
 
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Board not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Subject not found!" });
   }
 
   res.send({
     status: true,
-    data: await table.BoardModel.getBySlug(req),
+    data: await table.SubjectModel.getBySlug(req),
   });
 };
 
 const getById = async (req, res) => {
-  const record = await table.BoardModel.getById(req, req.params.id);
+  const record = await table.SubjectModel.getById(req, req.params.id);
 
   if (!record) {
-    return ErrorHandler({ code: NOT_FOUND, message: "Board not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Subject not found!" });
   }
 
   res.send({ status: true, data: record });
 };
 
 const get = async (req, res) => {
-  res.send({ status: true, data: await table.BoardModel.get(req) });
+  res.send({ status: true, data: await table.SubjectModel.get(req) });
 };
 
 const deleteById = async (req, res) => {
-  const record = await table.BoardModel.getById(req, req.params.id);
+  const record = await table.SubjectModel.getById(req, req.params.id);
 
   if (!record)
-    return ErrorHandler({ code: NOT_FOUND, message: "Board not found!" });
+    return ErrorHandler({ code: NOT_FOUND, message: "Subject not found!" });
 
-  await table.BoardModel.deleteById(req, req.params.id);
+  await table.SubjectModel.deleteById(req, req.params.id);
 
-  res.send({ status: true, message: "Board deleted." });
+  res.send({ status: true, message: "Subject deleted." });
 };
 
 export default {
