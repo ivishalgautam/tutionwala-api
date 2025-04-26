@@ -190,7 +190,7 @@ const get = async (req, id) => {
 
   const category = req.query.category ?? null;
   const language = req.query.language ? req.query.language?.split(" ") : [];
-  const subjects = req.query.subject ? req.query.subject?.split(" ") : [];
+  const subjects = !!req.query.subject ? req.query.subject?.split(" ") : [];
   const minAvgRating = req.query.rating
     ? (req.query.rating.split(" ") ?? [])
     : null;
