@@ -52,10 +52,12 @@ const otpSend = async (req, res) => {
     return ErrorHandler({ code: 404, message: "User not found!" });
   }
 
-  const otp =
-    record.mobile_number === "8429000000"
-      ? 111111
-      : crypto.randomInt(100000, 999999);
+  // const otp =
+  //   record.mobile_number === "8429000000"
+  //     ? 111111
+  //     : crypto.randomInt(100000, 999999);
+  const otp = 111111;
+
   console.log({ otp });
 
   req.body.email = record.email;
@@ -145,7 +147,8 @@ const createNewUser = async (req, res) => {
     });
   }
 
-  const otp = crypto.randomInt(100000, 999999);
+  // const otp = crypto.randomInt(100000, 999999);
+  const otp = 111111;
   console.log({ otp });
   const data = await table.UserModel.create(req);
   userData = await table.UserModel.getById(0, data.id);
