@@ -212,7 +212,7 @@ const get = async (req, id) => {
     ? req.query.budgetRange?.split(".")
     : null;
 
-  if (category.length) {
+  if (category) {
     whereConditions.push(`subcat.slug = :category`);
     queryParams.category = category;
   }
