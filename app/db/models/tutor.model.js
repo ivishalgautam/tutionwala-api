@@ -189,7 +189,6 @@ const get = async (req, id) => {
   const queryParams = {};
 
   const category = req.query.category ?? null;
-  console.log({ category });
   const language = req.query.language ? req.query.language?.split(" ") : [];
   const subjects = req.query.subject ? req.query.subject?.split(" ") : [];
   const minAvgRating = req.query.rating
@@ -310,7 +309,6 @@ const get = async (req, id) => {
     queryParams.minRange = budgetRange[0];
     queryParams.maxRange = budgetRange[1];
   }
-  console.log({ whereConditions, queryParams });
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
