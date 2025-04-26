@@ -188,7 +188,7 @@ const get = async (req, id) => {
   ];
   const queryParams = {};
 
-  const category = req.query.category ? req.query.category?.split(" ") : [];
+  const category = req.query.category ?? null;
   const language = req.query.language ? req.query.language?.split(" ") : [];
   const subjects = req.query.subject ? req.query.subject?.split(" ") : [];
   const minAvgRating = req.query.rating
@@ -213,8 +213,8 @@ const get = async (req, id) => {
     : null;
 
   if (category.length) {
-    whereConditions.push(`subcat.slug = ANY(:category)`);
-    queryParams.category = `{${category.join(",")}}`;
+    whereConditions.push(`subcat.slug = :category`);
+    queryParams.category = category;
   }
 
   if (language.length) {
