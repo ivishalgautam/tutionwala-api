@@ -309,7 +309,7 @@ const get = async (req, id) => {
     queryParams.minRange = budgetRange[0];
     queryParams.maxRange = budgetRange[1];
   }
-
+  console.log({ whereConditions, queryParams });
   const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : null;
   const offset = (page - 1) * limit;
