@@ -11,6 +11,7 @@ import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
 import { sendDltOtp } from "../../helpers/dlt-otp.js";
+import { otpGenerator } from "../../helpers/otp-generator.js";
 
 const { NOT_FOUND, BAD_REQUEST } = constants.http.status;
 
@@ -19,7 +20,7 @@ const create = async (req, res) => {
   if (user)
     return ErrorHandler({ code: 400, message: "User exist with this number" });
   // const otp = crypto.randomInt(100000, 999999);
-  const otp = 111111;
+  const otp = otpGenerator();
   console.log({ otp });
   req.body.otp = otp;
   const record = await table.OtpModel.getByMobile(req);

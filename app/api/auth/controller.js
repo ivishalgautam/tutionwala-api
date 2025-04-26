@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import moment from "moment";
 import { sendDltOtp } from "../../helpers/dlt-otp.js";
+import { otpGenerator } from "../../helpers/otp-generator.js";
 
 const verifyUserCredentials = async (req, res) => {
   let userData;
@@ -56,7 +57,7 @@ const otpSend = async (req, res) => {
   //   record.mobile_number === "8429000000"
   //     ? 111111
   //     : crypto.randomInt(100000, 999999);
-  const otp = 111111;
+  const otp = otpGenerator();
 
   console.log({ otp });
 
@@ -148,7 +149,7 @@ const createNewUser = async (req, res) => {
   }
 
   // const otp = crypto.randomInt(100000, 999999);
-  const otp = 111111;
+  const otp = otpGenerator();
   console.log({ otp });
   const data = await table.UserModel.create(req);
   userData = await table.UserModel.getById(0, data.id);
