@@ -4,7 +4,7 @@ import axios from "axios";
 import config from "../config/index.js";
 
 export async function sendDltOtp({ country_code = "+91", phone, otp }) {
-  return true;
+  return { state: "SUBMIT_ACCEPTED" };
   let axiosConfig = {
     method: "get",
     maxBodyLength: Infinity,
