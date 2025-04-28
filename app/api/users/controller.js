@@ -126,7 +126,7 @@ const deleteById = async (req, res) => {
 const deleteAccount = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    const record = await table.UserModel.getByPk(req);
+    const record = await table.UserModel.getByPk(req.user_data.id);
     if (record === 0) {
       return ErrorHandler({ code: 404, message: "User not exists" });
     }

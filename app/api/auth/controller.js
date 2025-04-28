@@ -4,7 +4,6 @@ import hash from "../../lib/encryption/index.js";
 
 import table from "../../db/models.js";
 import authToken from "../../helpers/auth.js";
-import crypto from "crypto";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import moment from "moment";
 import { sendDltOtp } from "../../helpers/dlt-otp.js";
