@@ -56,7 +56,7 @@ const otpSend = async (req, res) => {
   //   record.mobile_number === "8429000000"
   //     ? 111111
   //     : crypto.randomInt(100000, 999999);
-  const otp = otpGenerator();
+  const otp = otpGenerator(record);
 
   console.log({ otp });
 
@@ -159,7 +159,7 @@ const createNewUser = async (req, res) => {
   }
 
   // const otp = crypto.randomInt(100000, 999999);
-  const otp = otpGenerator();
+  const otp = otpGenerator(record);
   console.log({ otp });
   const data = await table.UserModel.create(req);
   userData = await table.UserModel.getById(0, data.id);

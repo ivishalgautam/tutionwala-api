@@ -9,6 +9,7 @@ import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
 import admin from "../../config/firebase.js";
+import { numberMasking } from "../../helpers/number-masking.js";
 // import admin from "../../config/firebase.js";
 
 const notificationTemplatePath = path.join(
@@ -248,7 +249,7 @@ const enquiryChat = async (fastify, connection, req, res) => {
   connection.socket.on("message", async (message) => {
     const { content } = JSON.parse(message);
     req.body = {};
-    req.body.content = content;
+    req.body.content = numberMasking(content);
     req.body.enquiry_id = req.params.id;
 
     await table.EnquiryChatModel.create(req);
@@ -270,13 +271,21 @@ const enquiryChat = async (fastify, connection, req, res) => {
             receiverId: enquiry.student_user_id,
             receiverFullname: enquiry.student_name,
             receiverEmail: enquiry.student_email,
-            role: "student",
+            receiverRole: "student",
+
+            senderId: chat.tutor_user_id,
+            senderFullname: chat.tutor_name,
+            senderEmail: chat.tutor_email,
           }
         : {
             receiverId: enquiry.tutor_user_id,
             receiverFullname: enquiry.tutor_name,
             receiverEmail: enquiry.tutor_email,
-            role: "tutor",
+            receiverRole: "tutor",
+
+            senderId: chat.student_user_id,
+            senderFullname: chat.student_name,
+            senderEmail: chat.student_email,
           };
     };
 

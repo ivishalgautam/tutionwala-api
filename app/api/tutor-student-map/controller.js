@@ -7,6 +7,7 @@ import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
 import admin from "../../config/firebase.js";
+import { numberMasking } from "../../helpers/number-masking.js";
 
 const get = async (req, res) => {
   const data = await table.TutorStudentMapModel.get(req);
@@ -59,9 +60,10 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
   connection.socket.on("message", async (message) => {
     const { content } = JSON.parse(message);
     req.body = {};
-    req.body.content = content;
-    req.body.tutor_student_map_id = req.params.id;
+    req.body.content = numberMasking(content);
 
+    req.body.tutor_student_map_id = req.params.id;
+    console.log({ content: req.body.content });
     await table.TutorStudentChatModel.create(req);
     const newMessage = {
       sender: req.user_data.fullname ?? "",
@@ -81,16 +83,33 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
             receiverId: chat.student_user_id,
             receiverFullname: chat.student_name,
             receiverEmail: chat.student_email,
+            receiverRole: "student",
+
+            senderId: chat.tutor_user_id,
+            senderFullname: chat.tutor_name,
+            senderEmail: chat.tutor_email,
           }
         : {
             receiverId: chat.tutor_user_id,
             receiverFullname: chat.tutor_name,
             receiverEmail: chat.tutor_email,
+            receiverRole: "tutor",
+
+            senderId: chat.student_user_id,
+            senderFullname: chat.student_name,
+            senderEmail: chat.student_email,
           };
     };
 
-    const { receiverId, receiverFullname, receiverEmail } =
-      await getReceiverDetails(chatId, userId);
+    const {
+      receiverId,
+      receiverFullname,
+      receiverEmail,
+      receiverRole,
+      senderId,
+      senderFullname,
+      senderEmail,
+    } = await getReceiverDetails(chatId, userId);
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
     }
@@ -119,17 +138,28 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
       );
       const notificationSend = ejs.render(notificationTemplate, {
         fullname: receiverFullname,
-        content: `New chat message from ${receiverFullname}.`,
+        content: `New chat message from ${senderFullname}.`,
       });
 
       // push notification
       const fcmRecord = await table.FCMModel.getByUser(userId);
+      console.log({ fcmRecord });
+
       if (fcmRecord) {
+        console.log({
+          receiverId,
+          receiverFullname,
+          receiverEmail,
+          receiverRole,
+          senderId,
+          senderFullname,
+          senderEmail,
+        });
         const appNotification = {
           token: fcmRecord.fcm_token,
           notification: {
             title: "Chat",
-            body: `New chat message from ${receiverFullname}.`,
+            body: `New chat message from ${senderFullname}.`,
           },
           data: {},
         };
