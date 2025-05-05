@@ -8,6 +8,8 @@
 /public
 /dump
 .env
+learners-app-firebase-config.json
+tutors-app-firebase-config.json
 # testing
 /coverage
 

@@ -8,6 +8,8 @@ import path from "path";
 import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
+import admin from "../../config/firebase.js";
+// import admin from "../../config/firebase.js";
 
 const notificationTemplatePath = path.join(
   fileURLToPath(import.meta.url),
@@ -119,6 +121,27 @@ const create = async (req, res) => {
       content: `New enquiry from ${req.user_data.fullname}`,
     });
 
+    const fcmRecord = await table.FCMModel.getByUser(req.user_data.id);
+    if (fcmRecord) {
+      const appNotification = {
+        token: fcmRecord.fcm_token,
+        notification: {
+          title: "Chat",
+          body: `New enquiry from ${req.user_data.fullname}.`,
+        },
+        data: {},
+      };
+
+      admin.tutors
+        .messaging()
+        .send(appNotification)
+        .then((response) => {
+          console.log("Successfully sent message:", response);
+        })
+        .catch((error) => {
+          console.error("Error sending message:", error);
+        });
+    }
     tutor.user.email &&
       (await sendMail(
         notificationSend,
@@ -247,15 +270,17 @@ const enquiryChat = async (fastify, connection, req, res) => {
             receiverId: enquiry.student_user_id,
             receiverFullname: enquiry.student_name,
             receiverEmail: enquiry.student_email,
+            role: "student",
           }
         : {
             receiverId: enquiry.tutor_user_id,
             receiverFullname: enquiry.tutor_name,
             receiverEmail: enquiry.tutor_email,
+            role: "tutor",
           };
     };
 
-    const { receiverId, receiverFullname, receiverEmail } =
+    const { receiverId, receiverFullname, receiverEmail, receiverRole } =
       await getReceiverDetails(enquiryId, userId);
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
@@ -268,13 +293,44 @@ const enquiryChat = async (fastify, connection, req, res) => {
       req.body.type = "enquiry_chat";
 
       await table.NotificationModel.create(req);
-
       // mail
       const notificationSend = ejs.render(notificationTemplate, {
         fullname: receiverFullname,
         content: `New enquiry chat message from ${receiverFullname}`,
       });
 
+      const fcmRecord = await table.FCMModel.getByUser(userId);
+      if (fcmRecord) {
+        const appNotification = {
+          token: fcmRecord.fcm_token,
+          notification: {
+            title: "Enquiry chat",
+            body: `New enquiry chat message from ${receiverFullname}`,
+          },
+          data: {},
+        };
+        if (receiverRole === "student") {
+          admin.learners
+            .messaging()
+            .send(appNotification)
+            .then((response) => {
+              console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+              console.error("Error sending message:", error);
+            });
+        } else {
+          admin.tutors
+            .messaging()
+            .send(appNotification)
+            .then((response) => {
+              console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+              console.error("Error sending message:", error);
+            });
+        }
+      }
       receiverEmail &&
         (await sendMail(
           notificationSend,

@@ -18,6 +18,7 @@ import tutorStudentMapModel from "./models/tutor-student-map.model.js";
 import tutorStudentChatModel from "./models/tutor-student-chat.model.js";
 import aadhaarDetailsModel from "./models/aadhaar-details.model.js";
 import notificationModel from "./models/notification.model.js";
+import fcmModel from "./models/fcm.model.js";
 
 export default {
   UserModel: userModel,
@@ -39,4 +40,5 @@ export default {
   TutorStudentChatModel: tutorStudentChatModel,
   AadhaarModel: aadhaarDetailsModel,
   NotificationModel: notificationModel,
+  FCMModel: fcmModel,
 };

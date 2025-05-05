@@ -20,6 +20,7 @@ const init = async (sequelize) => {
         key: "id",
       },
     },
+
     enquiry_id: {
       type: DataTypes.UUID,
       allowNull: true,

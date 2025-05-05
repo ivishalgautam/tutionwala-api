@@ -124,6 +124,17 @@ const otpVerify = async (req, res) => {
     user = await table.StudentModel.getByUserId(0, userData.id);
   }
 
+  const fcmToken = req.body.fcm_token;
+
+  if (fcmToken) {
+    const record = await table.FCMModel.getByUser(userData.id);
+    if (record) {
+      await table.FCMModel.updateByUser(userData.id, fcmToken);
+    } else {
+      await table.FCMModel.create(userData.id, fcmToken);
+    }
+  }
+
   return res.send({
     status: true,
     token: jwtToken,

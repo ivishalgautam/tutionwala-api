@@ -6,6 +6,7 @@ import path from "path";
 import fs from "fs";
 import ejs from "ejs";
 import { sendMail } from "../../helpers/mailer.js";
+import admin from "../../config/firebase.js";
 
 const get = async (req, res) => {
   const data = await table.TutorStudentMapModel.get(req);
@@ -120,6 +121,40 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
         fullname: receiverFullname,
         content: `New chat message from ${receiverFullname}.`,
       });
+
+      // push notification
+      const fcmRecord = await table.FCMModel.getByUser(userId);
+      if (fcmRecord) {
+        const appNotification = {
+          token: fcmRecord.fcm_token,
+          notification: {
+            title: "Chat",
+            body: `New chat message from ${receiverFullname}.`,
+          },
+          data: {},
+        };
+        if (receiverRole === "student") {
+          admin.learners
+            .messaging()
+            .send(appNotification)
+            .then((response) => {
+              console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+              console.error("Error sending message:", error);
+            });
+        } else {
+          admin.tutors
+            .messaging()
+            .send(appNotification)
+            .then((response) => {
+              console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+              console.error("Error sending message:", error);
+            });
+        }
+      }
       receiverEmail &&
         (await sendMail(notificationSend, receiverEmail, "Tutionwala Chat"));
     }

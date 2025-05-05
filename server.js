@@ -24,6 +24,8 @@ import { ErrorHandler } from "./app/helpers/handleError.js";
 import ejs from "ejs";
 import controller from "./app/api/enquiry/controller.js";
 
+import admin from "./app/config/firebase.js";
+
 /*
   Register External packages, routes, database connection
 */
@@ -39,6 +41,35 @@ export default (app) => {
       message: errorMessage,
     });
   });
+
+  app.post("/v1/send-notification", (req, res) => {
+    const token = req.body.fcm_token;
+    console.log({ token });
+    // Create the message object correctly with 'token' field
+    const message = {
+      token: token,
+      notification: {
+        title: "Enquiry chat",
+        body: "New enquiry chat message",
+      },
+      data: {
+        hello: "world",
+      },
+    };
+
+    admin.tutors
+      .messaging()
+      .send(message)
+      .then((response) => {
+        console.log("Successfully sent message:", response);
+        res.code(200).send({ success: true, response });
+      })
+      .catch((error) => {
+        console.error("Error sending message:", error);
+        res.code(500).send({ success: false, error: error.message });
+      });
+  });
+
   app.register(fastifyRateLimit, {
     max: Number(process.env.MAX_RATE_LIMIT), // Max requests per minute
     timeWindow: process.env.TIME_WINDOW,

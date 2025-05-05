@@ -45,6 +45,7 @@ const constants = {
     USER_TABLE: "users",
     TUTOR_TABLE: "tutors",
     STUDENT_TABLE: "students",
+    FCM_TABLE: "fcm_tokens",
     OTP_TABLE: "otps",
     CATEGORY_TABLE: "categories",
     SUB_CATEGORY_TABLE: "sub_categories",
