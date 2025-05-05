@@ -273,9 +273,9 @@ const enquiryChat = async (fastify, connection, req, res) => {
             receiverEmail: enquiry.student_email,
             receiverRole: "student",
 
-            senderId: chat.tutor_user_id,
-            senderFullname: chat.tutor_name,
-            senderEmail: chat.tutor_email,
+            senderId: enquiry.tutor_user_id,
+            senderFullname: enquiry.tutor_name,
+            senderEmail: enquiry.tutor_email,
           }
         : {
             receiverId: enquiry.tutor_user_id,
@@ -283,9 +283,9 @@ const enquiryChat = async (fastify, connection, req, res) => {
             receiverEmail: enquiry.tutor_email,
             receiverRole: "tutor",
 
-            senderId: chat.student_user_id,
-            senderFullname: chat.student_name,
-            senderEmail: chat.student_email,
+            senderId: enquiry.student_user_id,
+            senderFullname: enquiry.student_name,
+            senderEmail: enquiry.student_email,
           };
     };
 
