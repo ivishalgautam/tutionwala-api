@@ -60,13 +60,14 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
   connection.socket.on("message", async (message) => {
     const { content } = JSON.parse(message);
     req.body = {};
-    req.body.content = numberMasking(content);
+    const maskedContent = numberMasking(content);
+    req.body.content = maskedContent;
 
     req.body.tutor_student_map_id = req.params.id;
     await table.TutorStudentChatModel.create(req);
     const newMessage = {
       sender: req.user_data.fullname ?? "",
-      content,
+      content: maskedContent,
       id: Date.now(),
       tutorStudentMapId: req.params.id,
     };
