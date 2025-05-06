@@ -63,7 +63,6 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
     req.body.content = numberMasking(content);
 
     req.body.tutor_student_map_id = req.params.id;
-    console.log({ content: req.body.content });
     await table.TutorStudentChatModel.create(req);
     const newMessage = {
       sender: req.user_data.fullname ?? "",
@@ -161,7 +160,9 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
             title: "Chat",
             body: `New chat message from ${senderFullname}.`,
           },
-          data: {},
+          data: {
+            hello: "world",
+          },
         };
         if (receiverRole === "student") {
           admin.learners

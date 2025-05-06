@@ -130,7 +130,9 @@ const create = async (req, res) => {
           title: "Chat",
           body: `New enquiry from ${req.user_data.fullname}.`,
         },
-        data: {},
+        data: {
+          hello: "world",
+        },
       };
 
       admin.tutors
@@ -316,7 +318,9 @@ const enquiryChat = async (fastify, connection, req, res) => {
             title: "Enquiry chat",
             body: `New enquiry chat message from ${receiverFullname}`,
           },
-          data: {},
+          data: {
+            hello: "world",
+          },
         };
         if (receiverRole === "student") {
           admin.learners
