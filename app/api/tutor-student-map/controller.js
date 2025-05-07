@@ -162,7 +162,8 @@ const tutorStudentChat = async (fastify, connection, req, res) => {
             body: `New chat message from ${senderFullname}.`,
           },
           data: {
-            hello: "world",
+            chat_id: chatId,
+            type: "chat",
           },
         };
         if (receiverRole === "student") {
