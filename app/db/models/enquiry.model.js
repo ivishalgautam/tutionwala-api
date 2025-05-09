@@ -94,18 +94,18 @@ const get = async (req) => {
     SELECT
         enq.id, enq.created_at, enq.status, enq.subjects,
         sbcat.name as sub_category_name,
-        MAX(json_build_object(
-            'user_id', stuusr.id,
-            'student_id', stu.id,
-            'fullname', stuusr.fullname,
-            'profile_picture', stu.profile_picture
-        )) AS student,
-        MAX(json_build_object(
-            'user_id', tutusr.id,
-            'tutor_id', tut.id,
-            'fullname', tutusr.fullname,
-            'profile_picture', tut.profile_picture
-        )) AS tutor,
+        CAST(MAX(json_build_object(
+          'user_id', stuusr.id,
+          'student_id', stu.id,
+          'fullname', stuusr.fullname,
+          'profile_picture', stu.profile_picture
+        )::text) AS json) AS student,
+        CAST(MAX(json_build_object(
+          'user_id', tutusr.id,
+          'tutor_id', tut.id,
+          'fullname', tutusr.fullname,
+          'profile_picture', tut.profile_picture
+        )::text) AS json) AS tutor,
         COUNT(nt.id)::integer as unread_chat_count
        FROM ${constants.models.ENQUIRY_TABLE} enq
        LEFT JOIN ${constants.models.NOTIFICATION_TABLE} nt ON enq.id = nt.enquiry_id AND nt.user_id = :userId
