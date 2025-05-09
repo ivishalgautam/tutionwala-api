@@ -95,7 +95,7 @@ const get = async (req) => {
         enq.id, enq.created_at, enq.status, enq.subjects,
         sbcat.name as sub_category_name,
         json_agg(
-          DISTINCT json_build_object(
+          json_build_object(
             'user_id', stuusr.id,
             'student_id', stu.id,
             'fullname', stuusr.fullname,
@@ -103,7 +103,7 @@ const get = async (req) => {
           )
         ) as student,
         json_agg(
-          DISTINCT json_build_object(
+          json_build_object(
             'user_id', tutusr.id,
             'tutor_id', tut.id,
             'fullname', tutusr.fullname,
