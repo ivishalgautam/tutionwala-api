@@ -343,7 +343,7 @@ const update = async (req, id) => {
       country_code: req.body?.country_code?.replace(/\s/g, ""),
       role: req.body?.role,
       profile_picture: req.body?.profile_picture,
-      dob: req.body?.dob,
+      dob: req.body?.dob ?? null,
       is_aadhaar_verified: req.body?.is_aadhaar_verified,
       is_email_verified: req.body?.is_email_verified,
       father_name: req.body?.father_name,
