@@ -294,6 +294,8 @@ const enquiryChat = async (fastify, connection, req, res) => {
 
     const { receiverId, receiverFullname, receiverEmail, receiverRole } =
       await getReceiverDetails(enquiryId, userId);
+
+    console.log({ receiverId, receiverFullname, receiverEmail, receiverRole });
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
     }
