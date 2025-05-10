@@ -313,13 +313,13 @@ const enquiryChat = async (fastify, connection, req, res) => {
       });
 
       const fcmRecord = await table.FCMModel.getByUser(userId);
-      console.log({
-        fcmRecord,
-        receiverId,
-        receiverFullname,
-        receiverEmail,
-        receiverRole,
-      });
+      // console.log({
+      //   fcmRecord,
+      //   receiverId,
+      //   receiverFullname,
+      //   receiverEmail,
+      //   receiverRole,
+      // });
 
       if (fcmRecord) {
         const appNotification = {
