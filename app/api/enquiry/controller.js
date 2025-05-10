@@ -295,7 +295,6 @@ const enquiryChat = async (fastify, connection, req, res) => {
     const { receiverId, receiverFullname, receiverEmail, receiverRole } =
       await getReceiverDetails(enquiryId, userId);
 
-    console.log({ receiverId, receiverFullname, receiverEmail, receiverRole });
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
     }
@@ -314,6 +313,14 @@ const enquiryChat = async (fastify, connection, req, res) => {
       });
 
       const fcmRecord = await table.FCMModel.getByUser(userId);
+      console.log({
+        fcmRecord,
+        receiverId,
+        receiverFullname,
+        receiverEmail,
+        receiverRole,
+      });
+
       if (fcmRecord) {
         const appNotification = {
           token: fcmRecord.fcm_token,
