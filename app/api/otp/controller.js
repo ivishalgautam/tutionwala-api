@@ -82,6 +82,16 @@ const verify = async (req, res) => {
   const [jwtToken, expiresIn] = authToken.generateAccessToken(user);
   const refreshToken = authToken.generateRefreshToken(user);
 
+  const fcmToken = req.body.fcm_token;
+  if (fcmToken) {
+    const record = await table.FCMModel.getByUser(userData.id);
+    if (record) {
+      await table.FCMModel.updateByUser(userData.id, fcmToken);
+    } else {
+      await table.FCMModel.create(userData.id, fcmToken);
+    }
+  }
+
   const welcomeTemplatePath = path.join(
     fileURLToPath(import.meta.url),
     "..",
