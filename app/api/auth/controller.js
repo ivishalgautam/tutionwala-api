@@ -125,7 +125,6 @@ const otpVerify = async (req, res) => {
   }
 
   const fcmToken = req.body.fcm_token;
-
   if (fcmToken) {
     const record = await table.FCMModel.getByUser(userData.id);
     if (record) {

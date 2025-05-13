@@ -27,7 +27,7 @@ const init = async (sequelize) => {
         },
       },
       dob: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.STRING,
         allowNull: true,
       },
       email: {
