@@ -84,11 +84,11 @@ const verify = async (req, res) => {
 
   const fcmToken = req.body.fcm_token;
   if (fcmToken) {
-    const record = await table.FCMModel.getByUser(userData.id);
+    const record = await table.FCMModel.getByUser(user.id);
     if (record) {
-      await table.FCMModel.updateByUser(userData.id, fcmToken);
+      await table.FCMModel.updateByUser(user.id, fcmToken);
     } else {
-      await table.FCMModel.create(userData.id, fcmToken);
+      await table.FCMModel.create(user.id, fcmToken);
     }
   }
 
