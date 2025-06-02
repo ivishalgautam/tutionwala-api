@@ -228,6 +228,7 @@ const onlineUsers = new Map();
 const enquiryChat = async (fastify, connection, req, res) => {
   const enquiryId = req.params.id;
   const userId = req.user_data.id;
+  const senderName = req.user_data.fullname;
 
   const record = await table.EnquiryModel.getById(req);
   if (!record)
@@ -292,8 +293,15 @@ const enquiryChat = async (fastify, connection, req, res) => {
           };
     };
 
-    const { receiverId, receiverFullname, receiverEmail, receiverRole } =
-      await getReceiverDetails(enquiryId, userId);
+    const {
+      receiverId,
+      receiverFullname,
+      receiverEmail,
+      receiverRole,
+      senderId,
+      senderFullname,
+      senderEmail,
+    } = await getReceiverDetails(enquiryId, userId);
 
     if (!onlineUsers.has(receiverId)) {
       await sendNotification(receiverId, content);
@@ -326,7 +334,7 @@ const enquiryChat = async (fastify, connection, req, res) => {
           token: fcmRecord.fcm_token,
           notification: {
             title: "Enquiry chat",
-            body: `New enquiry chat message from ${receiverFullname}`,
+            body: `New enquiry chat message from ${senderFullname}`,
           },
           data: {
             enquiry_id: enquiryId,

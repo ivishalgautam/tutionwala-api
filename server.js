@@ -25,7 +25,9 @@ import ejs from "ejs";
 import controller from "./app/api/enquiry/controller.js";
 
 import admin from "./app/config/firebase.js";
-
+import { sendMail } from "./app/helpers/mailer.js";
+import nodemailer from "nodemailer";
+import config from "./app/config/index.js";
 /*
   Register External packages, routes, database connection
 */
