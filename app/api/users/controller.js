@@ -82,7 +82,7 @@ const deleteById = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const record = await table.UserModel.getByPk(req.params.id);
-    if (record === 0) {
+    if (!record) {
       return ErrorHandler({ code: 404, message: "User not exists" });
     }
 
