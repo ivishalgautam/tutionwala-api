@@ -11,6 +11,7 @@ import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import fastifySocketIO from "@fastify/websocket";
+import formbody from "@fastify/formbody";
 
 // import internal modules
 import authRoutes from "./app/api/auth/routes.js";
@@ -22,12 +23,7 @@ import { ErrorHandler } from "./app/helpers/handleError.js";
 //
 // other modules
 import ejs from "ejs";
-import controller from "./app/api/enquiry/controller.js";
-
-import admin from "./app/config/firebase.js";
-import { sendMail } from "./app/helpers/mailer.js";
-import nodemailer from "nodemailer";
-import config from "./app/config/index.js";
+import { Zoop } from "./app/services/zoop-kyc.js";
 /*
   Register External packages, routes, database connection
 */
@@ -44,34 +40,6 @@ export default (app) => {
     });
   });
 
-  app.post("/v1/send-notification", (req, res) => {
-    const token = req.body.fcm_token;
-    console.log({ token });
-    // Create the message object correctly with 'token' field
-    const message = {
-      token: token,
-      notification: {
-        title: "Enquiry chat",
-        body: "New enquiry chat message",
-      },
-      data: {
-        hello: "world",
-      },
-    };
-
-    admin.tutors
-      .messaging()
-      .send(message)
-      .then((response) => {
-        console.log("Successfully sent message:", response);
-        res.code(200).send({ success: true, response });
-      })
-      .catch((error) => {
-        console.error("Error sending message:", error);
-        res.code(500).send({ success: false, error: error.message });
-      });
-  });
-
   app.register(fastifyRateLimit, {
     max: Number(process.env.MAX_RATE_LIMIT), // Max requests per minute
     timeWindow: process.env.TIME_WINDOW,
@@ -79,13 +47,16 @@ export default (app) => {
       return ErrorHandler({ code: 429, message: "Rate limit exceeded." });
     },
   });
+
   app.register(fastifyHelmet);
+
   app.register(fastifyStatic, {
     root: path.join(dirname(fileURLToPath(import.meta.url), "public")),
   });
 
   app.register(cors, { origin: "*" });
   app.register(pg_database);
+  app.register(formbody);
   app.register(fastifyMultipart, {
     limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // Set the limit to 5 GB or adjust as needed
   });
@@ -109,4 +80,16 @@ export default (app) => {
   });
 
   app.register(uploadFileRoutes, { prefix: "v1/upload" });
+  app.post("/testing", {}, async (req, res) => {
+    return await Zoop.init();
+  });
+  app.post("/zoop/init", {}, async (req, res) => {
+    console.log(
+      req.body.result[0].data_json.Certificate.CertificateData.KycRes
+    );
+    // console.log(JSON.parse(req.body));
+  });
+  app.post("/zoop/verify", {}, async (req, res) => {
+    console.log(JSON.parse(req.body.payload));
+  });
 };

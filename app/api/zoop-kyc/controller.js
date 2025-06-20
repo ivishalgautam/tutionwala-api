@@ -1,32 +1,13 @@
 import table from "../../db/models.js";
 
 import axios from "axios";
-import configEnv from "../../config/index.js";
 import { ErrorHandler } from "../../helpers/handleError.js";
 import { z } from "zod";
+import { Zoop } from "../../services/zoop-kyc.js";
+import { transformAadhaarData } from "../../helpers/transform-aadhaar-data.js";
 
-const zoopOKYCRequestSchema = z.object({
-  customer_aadhaar_number: z.string().min(12).max(12),
-  name_to_match: z.string().optional(),
-  consent: z.literal("Y"),
-  consent_text: z.literal(
-    "I hear by declare my consent agreement for fetching my information via ZOOP API"
-  ),
-});
-
-const zoopOKYCVerifySchema = z.object({
-  request_id: z.string().uuid(),
-  otp: z.string().min(6).max(6),
-  // consent: z.literal("Y"),
-  // consent_text: z.literal(
-  //   "I hear by declare my consent agreement for fetching my information via ZOOP API"
-  // ),
-});
-
-const aadhaarKYCOTPRequest = async (req, res) => {
+const zoopInit = async (req, res) => {
   const { role, id } = req.user_data;
-
-  const validateData = zoopOKYCRequestSchema.parse(req.body);
 
   const tutor = await table.TutorModel.getByUserId(req);
   if (role === "tutor" && !tutor)
@@ -40,27 +21,16 @@ const aadhaarKYCOTPRequest = async (req, res) => {
       .code(404)
       .send({ status: false, message: "Student not registered!" });
 
-  let data = JSON.stringify({
-    mode: "sync",
-    data: req.body,
-  });
-
-  let config = {
-    method: "post",
-    maxBodyLength: Infinity,
-    url: "https://live.zoop.one/in/identity/okyc/otp/request",
-    headers: {
-      "app-id": configEnv.zoop_app_id,
-      "api-key": configEnv.zoop_app_key,
-      "Content-Type": "application/json",
-    },
-    data: data,
-  };
   try {
-    const resp = await axios.request(config);
-    if (resp.data.success) {
-      console.log(resp.data);
-      res.send(resp.data);
+    const data = await Zoop.init();
+    if (data?.request_id) {
+      req.body.request_id = data.request_id;
+      await table.ZoopModel.create(req);
+      return res.code(201).send({ status: true, data });
+    } else {
+      return res
+        .code(400)
+        .send({ status: false, message: "Something went wrong!" });
     }
   } catch (error) {
     console.log(error);
@@ -70,43 +40,42 @@ const aadhaarKYCOTPRequest = async (req, res) => {
   }
 };
 
-const aadhaarKYCOTPVerify = async (req, res) => {
-  const { role, id } = req.user_data;
-  const validateData = zoopOKYCVerifySchema.parse(req.body);
+const zoopCallback = async (req, res) => {
+  try {
+    const request_id = req.body?.request_id;
+    const status = req.body?.result?.[0]?.status;
+    if (status === "FETCHED") {
+      const zoopRequestRecord =
+        await table.ZoopModel.getByRequestId(request_id);
+      if (!zoopRequestRecord) return false;
 
-  const tutor = await table.TutorModel.getByUserId(req);
-  if (role === "tutor" && !tutor)
-    return res
-      .code(404)
-      .send({ status: false, message: "Tutor not registered!" });
+      const details = transformAadhaarData(req.body);
+      req.body.is_aadhaar_verified = true;
+      req.body.fullname = details.user_full_name;
+      await table.UserModel.update(req, id);
+      req.body.details = details;
+      req.body.customer_aadhaar_number = details.user_aadhaar_number;
 
-  const student = await table.StudentModel.getByUserId(0, id);
-  if (role === "student" && !student)
-    return res
-      .code(404)
-      .send({ status: false, message: "Student not registered!" });
+      const record = await table.AadhaarModel.getByUserId(id);
+      if (!record) {
+        await table.AadhaarModel.create(req);
+      }
+      await table.ZoopModel.deleteByRequestId(request_id);
+      return true;
+    } else {
+      await table.ZoopModel.deleteByRequestId(request_id);
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    ErrorHandler({
+      message: error?.response?.data?.response_message ?? "error",
+    });
+  }
+};
 
-  let data = JSON.stringify({
-    mode: "sync",
-    data: {
-      ...req.body,
-      consent: "Y",
-      consent_text:
-        "I hear by declare my consent agreement for fetching my information via ZOOP API",
-    },
-  });
-
-  let config = {
-    method: "post",
-    maxBodyLength: Infinity,
-    url: "https://live.zoop.one/in/identity/okyc/otp/verify",
-    headers: {
-      "app-id": configEnv.zoop_app_id,
-      "api-key": configEnv.zoop_app_key,
-      "Content-Type": "application/json",
-    },
-    data: data,
-  };
+const zoopRedirect = async (req, res) => {
+  return console.log("Redirect: ", JSON.parse(req.body.payload));
   try {
     const resp = await axios.request(config);
     if (resp.data.success) {
@@ -119,7 +88,7 @@ const aadhaarKYCOTPVerify = async (req, res) => {
 
       const record = await table.AadhaarModel.getByUserId(id);
       if (!record) {
-        await table.AadhaarModel.create(req, resp.data.result);
+        await table.AadhaarModel.create(req);
       }
       res.send({ status: true, message: "Verified." });
     }
@@ -132,6 +101,7 @@ const aadhaarKYCOTPVerify = async (req, res) => {
 };
 
 export default {
-  aadhaarKYCOTPRequest: aadhaarKYCOTPRequest,
-  aadhaarKYCOTPVerify: aadhaarKYCOTPVerify,
+  zoopInit: zoopInit,
+  zoopCallback: zoopCallback,
+  zoopRedirect: zoopRedirect,
 };

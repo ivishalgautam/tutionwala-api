@@ -1,0 +1,77 @@
+{
+  "request_id": "6854ef24b11fc41e3570656f",
+  "success": true,
+  "response_code": "100",
+  "response_message": "Transaction Successful",
+  "metadata": { "billable": "Y" },
+  "result": [
+    {
+      "issued": {
+        "name": "Aadhaar Card",
+        "type": "file",
+        "size": "",
+        "date": "20-06-2025",
+        "parent": "",
+        "mime": ["application/json", "application/xml", "application/pdf"],
+        "uri": "in.gov.uidai-ADHAR-bd2c6d21e3c8acf8bee996419b468683",
+        "doctype": "ADHAR",
+        "description": "Aadhaar Card",
+        "issuerid": "in.gov.uidai",
+        "issuer": "Unique Identification Authority of India (UIDAI)"
+      },
+      "doctype": "ADHAR",
+      "status": "FETCHED",
+      "fetched_at": "2025-06-20T05:19:50.448Z",
+      "data_json": {
+        "Certificate": {
+          "CertificateData": {
+            "KycRes": {
+              "code": "2bc9d3096c914aac9be0796101c51596",
+              "ret": "Y",
+              "ts": "2025-06-20T10:49:31.869+05:30",
+              "ttl": "2026-06-20T10:49:31",
+              "txn": "UKC:9bd94cb209354ab993a383c5e3f854b020250620104852",
+              "UidData": {
+                "tkn": "01002274QQ4g97RSZcF5y9IqA6ro3Ihi/ewnyVXpN0LQelHWxXCCzyLGFYX+EFeNTWGPb+yF",
+                "uid": "xxxxxxxx4805",
+                "Poi": {
+                  "dob": "03-02-2003",
+                  "gender": "M",
+                  "name": "Himanshu Kumar"
+                },
+                "Poa": {
+                  "co": "S/O Nand Kishor",
+                  "country": "India",
+                  "dist": "Faridabad",
+                  "house": "25A Agwanpur Surya Vihar Part-2 Near Shyam Market Faridabad",
+                  "lm": "Shyam market",
+                  "loc": "Surya Vihar Part-2 Agwanpur",
+                  "pc": "121003",
+                  "po": "Tilpat",
+                  "state": "Haryana",
+                  "street": "25A",
+                  "vtc": "Tilpat"
+                },
+                "LData": {
+                  "co": "आत्मज नन्द किशोर",
+                  "country": " ",
+                  "dist": "फरीदाबाद",
+                  "house": "२५ए अगवानपुर सूर्य विहार पार्ट-२ नियर श्याम मार्किट फरीदाबाद",
+                  "lang": "06",
+                  "lm": "श्याम मार्किट",
+                  "loc": "सूर्य विहार पार्ट-२ अगवानपुर",
+                  "name": "हिमांशु कुमार",
+                  "pc": "121003",
+                  "state": "हरयाणा",
+                  "street": "२५ए",
+                  "vtc": "तिलपत"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "request_timestamp": "2025-06-20T05:18:28.310Z"
+}

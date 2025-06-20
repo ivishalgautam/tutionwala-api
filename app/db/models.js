@@ -19,6 +19,7 @@ import tutorStudentChatModel from "./models/tutor-student-chat.model.js";
 import aadhaarDetailsModel from "./models/aadhaar-details.model.js";
 import notificationModel from "./models/notification.model.js";
 import fcmModel from "./models/fcm.model.js";
+import zoopModel from "./models/zoop.model.js";
 
 export default {
   UserModel: userModel,
@@ -41,4 +42,5 @@ export default {
   AadhaarModel: aadhaarDetailsModel,
   NotificationModel: notificationModel,
   FCMModel: fcmModel,
+  ZoopModel: zoopModel,
 };

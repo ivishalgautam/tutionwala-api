@@ -5,6 +5,7 @@ import { publicRoutes as review } from "../../api/review/routes.js";
 import { publicRoutes as query } from "../../api/query/routes.js";
 import { publicRoutes as feedback } from "../../api/feedback/routes.js";
 import { publicRoutes as subject } from "../../api/subject/routes.js";
+import { zoopPublicRoutes } from "../../api/zoop-kyc/routes.js";
 
 export default async function routes(fastify, options) {
   fastify.addHook("preHandler", async (request, reply) => {
@@ -18,4 +19,5 @@ export default async function routes(fastify, options) {
   fastify.register(query, { prefix: "queries" });
   fastify.register(feedback, { prefix: "feedbacks" });
   fastify.register(subject, { prefix: "subjects" });
+  fastify.register(zoopPublicRoutes, { prefix: "zoop" });
 }

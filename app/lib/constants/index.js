@@ -54,6 +54,7 @@ const constants = {
     BOARD_TABLE: "boards",
     SUBJECT_TABLE: "subjects",
     AADHAAR_TABLE: "aadhaar_details",
+    ZOOP_TABLE: "zoop_data",
     REVIEW_TABLE: "reviews",
     TUTOR_COURSE_TABLE: "tutor_courses",
     TUTOR_STUDENT_MAP_TABLE: "tutor_student_mappings",
