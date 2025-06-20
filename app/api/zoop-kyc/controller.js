@@ -23,9 +23,12 @@ const zoopInit = async (req, res) => {
 
   try {
     const data = await Zoop.init();
+    console.log({ data });
     if (data?.request_id) {
-      req.body.request_id = data.request_id;
-      await table.ZoopModel.create(req);
+      await table.ZoopModel.create({
+        ...req,
+        body: { request_id: data.request_id },
+      });
       return res.code(201).send({ status: true, data });
     } else {
       return res

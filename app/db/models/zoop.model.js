@@ -12,7 +12,7 @@ const init = async (sequelize) => {
       request_id: {
         primaryKey: true,
         allowNull: false,
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         unique: true,
       },
       user_id: {
