@@ -14,10 +14,10 @@ const init = async () => {
       data: JSON.stringify({
         docs: ["ADHAR"],
         purpose: "lll",
-        response_url:
-          "https://hjv2pvkv-3001.inc1.devtunnels.ms/v1/zoop/callback",
-        redirect_url:
-          "https://hjv2pvkv-3001.inc1.devtunnels.ms/v1/zoop/redirect",
+        // response_url: "https://hjv2pvkv-3001.inc1.devtunnels.ms/v1/zoop/callback",
+        // redirect_url: "https://hjv2pvkv-3001.inc1.devtunnels.ms/v1/zoop/redirect",
+        response_url: "https://api.tutionwala.com/v1/zoop/callback",
+        redirect_url: "https://api.tutionwala.com/v1/zoop/redirect",
         pinless: false,
       }),
     };
