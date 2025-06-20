@@ -62,7 +62,7 @@ const zoopCallback = async (req, res) => {
       req.body.details = details;
       req.body.customer_aadhaar_number = details.user_aadhaar_number;
 
-      const record = await table.AadhaarModel.getByUserId(id);
+      const record = await table.AadhaarModel.getByUserId(user.id);
       if (!record) {
         await table.AadhaarModel.create(req);
       }
@@ -82,8 +82,8 @@ const zoopCallback = async (req, res) => {
 
 const zoopRedirect = async (req, res) => {
   try {
-    console.log(req.body);
-    const request_id = req.body.request_id;
+    const data = JSON.parse(req.body.payload);
+    const request_id = data.request_id;
     console.log({ request_id });
     await table.ZoopModel.deleteByRequestId(request_id);
     return true;
