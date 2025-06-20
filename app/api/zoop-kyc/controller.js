@@ -64,7 +64,7 @@ const zoopCallback = async (req, res) => {
 
       const record = await table.AadhaarModel.getByUserId(user.id);
       if (!record) {
-        await table.AadhaarModel.create(req);
+        await table.AadhaarModel.create({ ...req, user_data: { id: user.id } });
       }
       await table.ZoopModel.deleteByRequestId(request_id);
       return true;
