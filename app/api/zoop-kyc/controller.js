@@ -1,10 +1,10 @@
 import table from "../../db/models.js";
 
-import axios from "axios";
 import { ErrorHandler } from "../../helpers/handleError.js";
-import { z } from "zod";
 import { Zoop } from "../../services/zoop-kyc.js";
 import { transformAadhaarData } from "../../helpers/transform-aadhaar-data.js";
+import path from "path";
+import fs from "fs";
 
 const zoopInit = async (req, res) => {
   const { role, id } = req.user_data;
@@ -47,7 +47,6 @@ const zoopCallback = async (req, res) => {
   try {
     const request_id = req.body?.request_id;
     const status = req.body?.result?.[0]?.status;
-    console.log({ status });
     if (status === "FETCHED") {
       const zoopRequestRecord =
         await table.ZoopModel.getByRequestId(request_id);
@@ -82,11 +81,28 @@ const zoopCallback = async (req, res) => {
 
 const zoopRedirect = async (req, res) => {
   try {
+    console.log("Redirect1: ", req.body.payload);
+    console.log("Redirect2: ", JSON.parse(req.body.payload));
+    const action = req.query.action;
     const data = JSON.parse(req.body.payload);
-    const request_id = data.request_id;
-    console.log({ request_id });
-    await table.ZoopModel.deleteByRequestId(request_id);
-    return true;
+    const request_id = data?.request_id ?? null;
+    const status = data?.result?.[0]?.status;
+    if (request_id) {
+      await table.ZoopModel.deleteByRequestId(request_id);
+    }
+    const htmlPath = path.join(
+      process.cwd(),
+      "views",
+      "html",
+      action === "digilocker-success" && status === "FETCHED"
+        ? "thank-you-kyc.html"
+        : "error-kyc.html"
+    );
+    const htmlContent = fs.readFileSync(htmlPath, "utf8");
+
+    return res
+      .header("Content-Type", "text/html; charset=utf-8")
+      .send(htmlContent);
   } catch (error) {
     console.log(error);
     ErrorHandler({

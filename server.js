@@ -2,6 +2,7 @@
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import path from "path";
+import fs from "fs";
 
 // fastify modules
 import cors from "@fastify/cors";
@@ -51,7 +52,7 @@ export default (app) => {
   app.register(fastifyHelmet);
 
   app.register(fastifyStatic, {
-    root: path.join(dirname(fileURLToPath(import.meta.url), "public")),
+    root: path.join(process.cwd(), "public"),
   });
 
   app.register(cors, { origin: "*" });
@@ -80,16 +81,18 @@ export default (app) => {
   });
 
   app.register(uploadFileRoutes, { prefix: "v1/upload" });
-  app.post("/testing", {}, async (req, res) => {
-    return await Zoop.init();
-  });
-  app.post("/zoop/init", {}, async (req, res) => {
-    console.log(
-      req.body.result[0].data_json.Certificate.CertificateData.KycRes
+  app.get("/testing", {}, async (req, res) => {
+    const htmlPath = path.join(
+      process.cwd(),
+      "views",
+      "html",
+      "thank-you-kyc.html"
     );
-    // console.log(JSON.parse(req.body));
-  });
-  app.post("/zoop/verify", {}, async (req, res) => {
-    console.log(JSON.parse(req.body.payload));
+
+    const htmlContent = fs.readFileSync(htmlPath, "utf8");
+
+    return res
+      .header("Content-Type", "text/html; charset=utf-8")
+      .send(htmlContent);
   });
 };
