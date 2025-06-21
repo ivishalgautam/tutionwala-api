@@ -71,9 +71,9 @@ export default async (app) => {
     },
   });
 
-  await app.register(fastifyCompress, {
-    threshold: 0,
-  });
+  // await app.register(fastifyCompress, {
+  //   threshold: 0,
+  // });
   // Increase the payload size limit
   await app.register(routes, { prefix: "v1" });
   await app.register(publicRoutes, { prefix: "v1" });
