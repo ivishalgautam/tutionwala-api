@@ -13,6 +13,7 @@ import fastifyMultipart from "@fastify/multipart";
 import fastifyStatic from "@fastify/static";
 import fastifySocketIO from "@fastify/websocket";
 import formbody from "@fastify/formbody";
+import fastifyCompress from "@fastify/compress";
 
 // import internal modules
 import authRoutes from "./app/api/auth/routes.js";
@@ -28,8 +29,8 @@ import { Zoop } from "./app/services/zoop-kyc.js";
 /*
   Register External packages, routes, database connection
 */
-export default (app) => {
-  app.setErrorHandler(function (error, req, res) {
+export default async (app) => {
+  await app.setErrorHandler(function (error, req, res) {
     console.error(error);
     const statusCode = error.statusCode || 500;
     const errorMessage = error.message || "Internal Server Error";
@@ -41,7 +42,7 @@ export default (app) => {
     });
   });
 
-  app.register(fastifyRateLimit, {
+  await app.register(fastifyRateLimit, {
     max: Number(process.env.MAX_RATE_LIMIT), // Max requests per minute
     timeWindow: process.env.TIME_WINDOW,
     errorResponseBuilder: (req, context) => {
@@ -49,20 +50,20 @@ export default (app) => {
     },
   });
 
-  app.register(fastifyHelmet);
+  await app.register(fastifyHelmet);
 
-  app.register(fastifyStatic, {
+  await app.register(fastifyStatic, {
     root: path.join(process.cwd(), "public"),
   });
 
-  app.register(cors, { origin: "*" });
-  app.register(pg_database);
-  app.register(formbody);
-  app.register(fastifyMultipart, {
+  await app.register(cors, { origin: "*" });
+  await app.register(pg_database);
+  await app.register(formbody);
+  await app.register(fastifyMultipart, {
     limits: { fileSize: 5 * 1024 * 1024 * 1024 }, // Set the limit to 5 GB or adjust as needed
   });
 
-  app.register(fastifySocketIO, {
+  await app.register(fastifySocketIO, {
     cors: { origin: "*" },
     options: {
       maxPayload: 1048576,
@@ -70,18 +71,21 @@ export default (app) => {
     },
   });
 
+  await app.register(fastifyCompress, {
+    threshold: 0,
+  });
   // Increase the payload size limit
-  app.register(routes, { prefix: "v1" });
-  app.register(publicRoutes, { prefix: "v1" });
-  app.register(authRoutes, { prefix: "v1/auth" });
-  app.register(fastifyView, {
+  await app.register(routes, { prefix: "v1" });
+  await app.register(publicRoutes, { prefix: "v1" });
+  await app.register(authRoutes, { prefix: "v1/auth" });
+  await app.register(fastifyView, {
     engine: {
       ejs: ejs,
     },
   });
 
-  app.register(uploadFileRoutes, { prefix: "v1/upload" });
-  app.get("/testing", {}, async (req, res) => {
+  await app.register(uploadFileRoutes, { prefix: "v1/upload" });
+  await app.get("/testing", {}, async (req, res) => {
     const htmlPath = path.join(
       process.cwd(),
       "views",

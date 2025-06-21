@@ -81,8 +81,7 @@ const zoopCallback = async (req, res) => {
 
 const zoopRedirect = async (req, res) => {
   try {
-    console.log("Redirect1: ", req.body.payload);
-    console.log("Redirect2: ", JSON.parse(req.body.payload));
+    // console.log("Redirect2: ", JSON.parse(req.body.payload));
     const action = req.query.action;
     const data = JSON.parse(req.body.payload);
     const request_id = data?.request_id ?? null;
