@@ -138,7 +138,9 @@ const getById = async (req, res) => {
 
 const get = async (req, res) => {
   const data = await table.SubCategoryModel.get(req);
-  res.send({ status: true, data, total: data?.[0]?.total });
+  res
+    .type("application/json")
+    .send({ status: true, data, total: data?.[0]?.total });
 };
 
 const deleteById = async (req, res) => {
